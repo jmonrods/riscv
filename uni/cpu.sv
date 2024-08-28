@@ -257,12 +257,12 @@ module ALU(
     always_comb begin
 
         case (Ctrl)
-            3'b000:  Result = SrcA + SrcB;   // add
-            3'b001:  Result = SrcA - SrcB;   // subtract
-            3'b010:  Result = SrcA && SrcB;  // and
-            3'b011:  Result = SrcA || SrcB;  // or
-            3'b101:  Result = SrcA << 1;     // slt
-            default: Result = 32'hDEADBEEF; // error
+            3'b000:  Result = SrcA + SrcB;              // add
+            3'b001:  Result = SrcA - SrcB;              // subtract
+            3'b010:  Result = SrcA && SrcB;             // and
+            3'b011:  Result = SrcA || SrcB;             // or
+            3'b101:  Result = (SrcA < SrcB) ? 1 : 0;    // slt (set if less than)
+            default: Result = 32'hDEADBEEF;             // error
         endcase
 
     end
