@@ -4,6 +4,8 @@
 // Fecha:       26.08.2024
 // Descripción: RISC-V CPU Testbench
 
+`timescale 1ns/1ps
+
 module cpu_tb();
 
     reg clk;

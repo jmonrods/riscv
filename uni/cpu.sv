@@ -19,6 +19,7 @@ module cpu(
     wire [31:0] SrcA;
     wire [31:0] SrcB;
     assign SrcB = ImmExt; // for now
+    wire [2:0]  ALUControl;
     wire [31:0] ALUResult;
 
     pc pc1 (
@@ -95,7 +96,7 @@ module imem(
 );
 
     always_comb begin
-        case A: // code a program in machine language
+        case (A) // code a program in machine language
             32'h00000000: RD = 32'hFFC4A303; // lw x6, -4(x9)
             32'h00000004: RD = 32'hFFC4A303; // lw x6, -4(x9)
             default:      RD = 32'hDEADBEEF; // error: pc out of bounds
@@ -120,13 +121,15 @@ module register_bank(
 
     logic [31:0] mem[32];
 
+    int i;
     always_ff @ (posedge rst) begin
-        mem
+        for (i = 0; i<32; i++) begin
+            mem[i] <= 0;            
+        end
     end
 
     always_ff @ (posedge clk) begin
         if (WE3) mem[A3] <= WD3;
-        else WD3 <= WD3;
     end
 
     always_ff @ (posedge clk) begin
@@ -160,10 +163,10 @@ module dmem(
 
     always @(posedge clk) begin
         if (WE) begin
-            mem[A] <= WD;
-            RD <= mem[A];
+            mem[A] = WD;
+            RD = mem[A];
         end else begin
-            RD <= mem[A];
+            RD = mem[A];
         end
     end
 
@@ -176,7 +179,7 @@ module Extend(
     output [31:0] Q
 );
 
-    assign Q = {20{A[11]}, A};
+    assign Q = {{20{A[11]}}, A};
 
 endmodule
 
@@ -185,20 +188,20 @@ endmodule
 // Each operation needs to be replaced with proper hardware
 module ALU(
     input [2:0] Ctrl,
-    input SrcA,
-    input SrcB,
-    output Result
+    input [31:0] SrcA,
+    input [31:0] SrcB,
+    output logic [31:0] Result
 );
 
     always_comb begin
 
-        case Ctrl:
+        case (Ctrl)
             3'b000:  Result = SrcA + SrcB;   // add
             3'b001:  Result = SrcA - SrcB;   // subtract
             3'b010:  Result = SrcA && SrcB;  // and
             3'b011:  Result = SrcA || SrcB;  // or
             3'b101:  Result = SrcA << 1;     // slt
-            default: Result = 32'bDEADBEEF; // error
+            default: Result = 32'hDEADBEEF; // error
         endcase
 
     end
