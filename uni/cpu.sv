@@ -15,12 +15,17 @@ module cpu(
     wire [31:0] pc;
     wire [31:0] pc_next;
     wire [31:0] Instr;
+    wire        ImmSrc;
     wire [31:0] ImmExt;
     wire [31:0] SrcA;
     wire [31:0] SrcB;
-    assign SrcB = ImmExt; // for now
+    wire        ALUSrc;
+    wire        ResultSrc;
     wire [2:0]  ALUControl;
     wire [31:0] ALUResult;
+    wire [31:0] Result;
+    wire        MemWrite;
+    wire [31:0] WriteData;
 
     pc pc1 (
         .clk(clk),
@@ -38,17 +43,25 @@ module cpu(
         .clk(clk),
         .rst(rst),
         .A1(Instr[19:15]),
-        .A2(),
-        .A3(),
+        .A2(Instr[24:20]),
+        .A3(Instr[11:7]),
         .WE3(),
-        .WD3(ReadData),
+        .WD3(Result),
         .RD1(SrcA),
-        .RD2()
+        .RD2(WriteData)
     );
 
     Extend ext1 (
-        .A(Instr[31:20]),
+        .src(ImmSrc),
+        .A(Instr[31:0]),
         .Q(ImmExt)
+    );
+
+    mux32 mux1 (
+        .sel(ALUSrc),
+        .A(WriteData),
+        .B(ImmExt),
+        .Q(SrcB)
     );
 
     ALU alu1 (
@@ -61,10 +74,17 @@ module cpu(
     dmem dmem1 (
         .clk(clk),
         .rst(rst),
-        .WE(),
+        .WE(MemWrite),
         .A(ALUResult),
-        .WD(),
+        .WD(WriteData),
         .RD(ReadData)
+    );
+
+    mux32 mux2 (
+        .sel(ResultSrc),
+        .A(ALUResult),
+        .B(ReadData),
+        .Q(Result)
     );
 
 endmodule
@@ -175,11 +195,12 @@ endmodule
 
 // Sign extension
 module Extend(
-    input  [11:0] A,
+    input         src,
+    input  [31:0] A,
     output [31:0] Q
 );
 
-    assign Q = {{20{A[11]}}, A};
+    assign Q = src ? {{20{A[31]}}, A[31:25], A[11:7]} : {{20{A[31]}}, A[31:20]};
 
 endmodule
 
@@ -205,5 +226,17 @@ module ALU(
         endcase
 
     end
+
+endmodule
+
+
+module mux32 (
+    input               sel,
+    input        [31:0] A,
+    input        [31:0] B,
+    output logic [31:0] Q 
+);
+
+    assign Q = sel ? B : A;
 
 endmodule
