@@ -12,13 +12,16 @@ module cpu(
     output [31:0] ReadData
 );
 
-    wire [31:0] pc;
-    wire [31:0] pc_next;
+    wire [31:0] PC;
+    wire [31:0] PCNext;
+    wire [31:0] PCPlus4;
+    wire [31:0] PCTarget;
     wire [31:0] Instr;
-    wire        ImmSrc;
+    wire [1:0]  ImmSrc;
     wire [31:0] ImmExt;
     wire [31:0] SrcA;
     wire [31:0] SrcB;
+    wire        PCSrc;
     wire        ALUSrc;
     wire        ResultSrc;
     wire [2:0]  ALUControl;
@@ -30,12 +33,25 @@ module cpu(
     pc pc1 (
         .clk(clk),
         .rst(rst),
-        .PCNext(pc_next),
-        .PC(pc)
+        .PCNext(PCNext),
+        .PC(PC)
+    );
+
+    mux32 mux_pc (
+        .sel(PCSrc),
+        .A(PCPlus4),
+        .B(PCTarget),
+        .Q(PCNext)
+    );
+
+    adder32 pc_plus_4_adder (
+        .A(PC),
+        .B(4),
+        .Q(PCPlus4)
     );
 
     imem imem1 (
-        .A(pc),
+        .A(PC),
         .RD(Instr)
     );
 
@@ -55,6 +71,12 @@ module cpu(
         .src(ImmSrc),
         .A(Instr[31:0]),
         .Q(ImmExt)
+    );
+
+    adder32 pc_target_adder (
+        .A(PC),
+        .B(ImmExt),
+        .Q(PCTarget)
     );
 
     mux32 mux1 (
@@ -103,7 +125,16 @@ module pc(
         else PC <= PCNext;
     end
 
-    assign PCNext = PC + 4;
+endmodule
+
+
+module adder32 (
+    input        [31:0] A,
+    input        [31:0] B,
+    output logic [31:0] Q
+);
+
+    assign Q = A + B;
 
 endmodule
 
@@ -195,12 +226,21 @@ endmodule
 
 // Sign extension
 module Extend(
-    input         src,
-    input  [31:0] A,
-    output [31:0] Q
+    input        [1:0]  src,
+    input        [31:0] A,
+    output logic [31:0] Q
 );
 
-    assign Q = src ? {{20{A[31]}}, A[31:25], A[11:7]} : {{20{A[31]}}, A[31:20]};
+    always_comb begin
+
+        case (src)
+            2'b00:   Q = {{20{A[31]}}, A[31:20]};              // I-Type
+            2'b01:   Q = {{20{A[31]}}, A[31:25], A[11:7]};     // S-Type
+            2'b10:   Q = {{19{A[31]}}, A[31], A[7],A[30:25], A[11:8], 1'b0}; // B-Type
+            default: Q = 32'h00000000; // not used
+        endcase
+
+    end
 
 endmodule
 
