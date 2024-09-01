@@ -121,7 +121,7 @@ module pc(
 );
 
     always_ff @ (posedge clk) begin
-        if (rst) PC <= 32'h10000000; // begin of text segment
+        if (rst) PC <= 32'h00400000; // begin of text segment
         else PC <= PCNext;
     end
 
@@ -148,8 +148,10 @@ module imem(
 
     always_comb begin
         case (A) // code a program in machine language
-            32'h00000000: RD = 32'hFFC4A303; // lw x6, -4(x9)
-            32'h00000004: RD = 32'hFFC4A303; // lw x6, -4(x9)
+            32'h00400000: RD = 32'hFFC4A303; // lw x6, -4(x9)
+            32'h00400004: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h00400008: RD = 32'h0062E233; // or x4, x5, x6
+            32'h00400012: RD = 32'hFE420AE3; // beq x4, x4, L7
             default:      RD = 32'hDEADBEEF; // error: pc out of bounds
         endcase
     end
@@ -170,8 +172,10 @@ module register_bank(
     output logic [31:0] RD2
 );
 
+    // array of static memory
     logic [31:0] mem[32];
 
+    // reset logic
     int i;
     always_ff @ (posedge rst) begin
         for (i = 0; i<32; i++) begin
@@ -179,10 +183,12 @@ module register_bank(
         end
     end
 
+    // write logic
     always_ff @ (posedge clk) begin
         if (WE3) mem[A3] <= WD3;
     end
 
+    // read logic
     always_ff @ (posedge clk) begin
         RD1 <= mem[A1];
         RD2 <= mem[A2];
@@ -202,14 +208,11 @@ module dmem(
     output logic [31:0] RD
 );
 
-// Note: avoid coding a 4GB RAM, takes forever to simulate
-// Better: dictionary with keys, non-synthesizable (associative array)
-
-    logic [31:0] mem [logic [31:0]]; // associative array of logic [31:0], indexed by logic [31:0]
+    // associative array: dynamic memory
+    logic [31:0] mem [logic [31:0]];
 
     always @(posedge rst) begin
         mem.delete();
-        // preload some values for testing
     end
 
     always @(posedge clk) begin
