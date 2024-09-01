@@ -121,7 +121,7 @@ module pc(
 );
 
     always_ff @ (posedge clk) begin
-        if (rst) PC <= 32'h00400000; // begin of text segment
+        if (rst) PC <= 32'h00400000; // text segment
         else PC <= PCNext;
     end
 
@@ -147,7 +147,7 @@ module imem(
 );
 
     always_comb begin
-        case (A) // code a program in machine language
+        case (A) // instructions in machine language
             32'h00400000: RD = 32'hFFC4A303; // lw x6, -4(x9)
             32'h00400004: RD = 32'h0064A423; // sw x6, 8(x9)
             32'h00400008: RD = 32'h0062E233; // or x4, x5, x6
@@ -211,17 +211,21 @@ module dmem(
     // associative array: dynamic memory
     logic [31:0] mem [logic [31:0]];
 
+    // reset logic
     always @(posedge rst) begin
         mem.delete();
     end
 
+    // write logic
     always @(posedge clk) begin
         if (WE) begin
             mem[A] = WD;
-            RD = mem[A];
-        end else begin
-            RD = mem[A];
         end
+    end
+
+    // read logic
+    always @(posedge clk) begin
+        RD = mem[A];
     end
 
 endmodule
