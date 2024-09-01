@@ -6,7 +6,7 @@
 
 `timescale 1ns/1ps
 
-module cpu(
+module cpu (
     input clk,
     input rst,
     output [31:0] ReadData
@@ -29,6 +29,7 @@ module cpu(
     wire [31:0] Result;
     wire        MemWrite;
     wire [31:0] WriteData;
+    logic       zero;
 
     pc pc1 (
         .clk(clk),
@@ -90,7 +91,8 @@ module cpu(
         .Ctrl(ALUControl),
         .SrcA(SrcA),
         .SrcB(SrcB),
-        .Result(ALUResult)
+        .Result(ALUResult),
+        .zero(zero)
     );
 
     dmem dmem1 (
@@ -109,11 +111,25 @@ module cpu(
         .Q(Result)
     );
 
+    control_unit ctrl1 (
+        .op           (Instr[6:0]),
+        .funct3       (Instr[14:12]),
+        .funct7_bit5  (Instr[30]),
+        .Zero         (zero),
+        .PCSrc        (PCSrc),
+        .ResultSrc    (ResultSrc),
+        .MemWrite     (MemWrite),
+        .ALUControl   (ALUControl),
+        .ALUSrc       (ALUSrc),
+        .ImmSrc       (ImmSrc),
+        .RegWrite     (RegWrite)
+);
+
 endmodule
 
 
 // Program Counter
-module pc( 
+module pc ( 
     input               clk,
     input               rst,
     input        [31:0] PCNext,
@@ -141,7 +157,7 @@ endmodule
 
 // Instruction Memory
 // ROM (aligned by 4)
-module imem(
+module imem (
     input [31:0] A,
     output logic [31:0] RD
 );
@@ -160,7 +176,7 @@ endmodule
 
 
 // Register Bank
-module register_bank(
+module register_bank (
     input clk,
     input rst,
     input WE3,
@@ -199,7 +215,7 @@ endmodule
 
 // Data Memory
 // RAM (aligned by 4)
-module dmem(
+module dmem (
     input clk,
     input rst,
     input WE,
@@ -232,7 +248,7 @@ endmodule
 
 
 // Sign extension
-module Extend(
+module Extend (
     input        [1:0]  src,
     input        [31:0] A,
     output logic [31:0] Q
@@ -254,11 +270,12 @@ endmodule
 
 // 32-bit ALU (Behavioral)
 // Each operation needs to be replaced with proper hardware
-module ALU(
-    input [2:0] Ctrl,
-    input [31:0] SrcA,
-    input [31:0] SrcB,
-    output logic [31:0] Result
+module ALU (
+    input        [2:0] Ctrl,
+    input        [31:0] SrcA,
+    input        [31:0] SrcB,
+    output logic [31:0] Result,
+    output logic        zero
 );
 
     always_comb begin
@@ -274,6 +291,8 @@ module ALU(
 
     end
 
+    assign zero = (Result == 0) ? 1 : 0;
+
 endmodule
 
 
@@ -285,5 +304,105 @@ module mux32 (
 );
 
     assign Q = sel ? B : A;
+
+endmodule
+
+
+module control_unit (
+    input        [6:0] op,
+    input        [2:0] funct3,
+    input              funct7_bit5,
+    input              Zero,
+    output logic       PCSrc,
+    output logic       ResultSrc,
+    output logic       MemWrite,
+    output logic [2:0] ALUControl,
+    output logic       ALUSrc,
+    output logic [1:0] ImmSrc,
+    output logic       RegWrite
+);
+
+    // Main Decoder
+    logic [1:0] ALUOp;
+    logic       Branch;
+
+    always_comb begin
+
+        case (op[6:0])
+            3: // lw
+            begin
+                ALUOp     = 2'b00;
+                Branch    = 1'b0;
+                ResultSrc = 1'b1;
+                MemWrite  = 1'b0;
+                ALUSrc    = 1'b1;
+                ImmSrc    = 2'b00;
+                RegWrite  = 1'b1;
+            end
+            35: // sw
+            begin
+                ALUOp     = 2'b00;
+                Branch    = 1'b0;
+                ResultSrc = 1'b0;
+                MemWrite  = 1'b1;
+                ALUSrc    = 1'b1;
+                ImmSrc    = 2'b01;
+                RegWrite  = 1'b0;
+            end
+            51: // R-type
+            begin
+                ALUOp     = 2'b10;
+                Branch    = 1'b0;
+                ResultSrc = 1'b0;
+                MemWrite  = 1'b0;
+                ALUSrc    = 1'b0;
+                ImmSrc    = 2'b00;
+                RegWrite  = 1'b1;
+            end
+            99: // beq
+            begin
+                ALUOp     = 2'b01;
+                Branch    = 1'b1;
+                ResultSrc = 1'b0;
+                MemWrite  = 1'b0;
+                ALUSrc    = 1'b0;
+                ImmSrc    = 2'b10;
+                RegWrite  = 1'b0;
+            end
+            default: // not implemented
+            begin
+                ALUOp     = 2'b00;
+                Branch    = 1'b0;
+                ResultSrc = 1'b0;
+                MemWrite  = 1'b0;
+                ALUSrc    = 1'b0;
+                ImmSrc    = 2'b00;
+                RegWrite  = 1'b0;
+            end
+        endcase
+
+    end
+
+    assign PCSrc = Branch && Zero;
+
+
+    // ALU Decoder
+
+    always_comb begin
+
+        case ({ALUOp,funct3,op[5],funct7_bit5})
+            7'b00xxxxx: ALUControl = 3'b000;
+            7'b01xxxxx: ALUControl = 3'b001;
+            7'b1000000: ALUControl = 3'b000;
+            7'b1000001: ALUControl = 3'b000;
+            7'b1000010: ALUControl = 3'b000;
+            7'b1000011: ALUControl = 3'b001;
+            7'b10010xx: ALUControl = 3'b101;
+            7'b10110xx: ALUControl = 3'b011;
+            7'b10111xx: ALUControl = 3'b010;
+            default:    ALUControl = 3'b000;
+        endcase
+
+    end
 
 endmodule
