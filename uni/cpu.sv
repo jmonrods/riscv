@@ -123,7 +123,7 @@ module cpu (
         .ALUSrc       (ALUSrc),
         .ImmSrc       (ImmSrc),
         .RegWrite     (RegWrite)
-);
+    );
 
 endmodule
 
@@ -167,8 +167,45 @@ module imem (
             32'h00400000: RD = 32'hFFC4A303; // lw x6, -4(x9)
             32'h00400004: RD = 32'h0064A423; // sw x6, 8(x9)
             32'h00400008: RD = 32'h0062E233; // or x4, x5, x6
-            32'h00400012: RD = 32'hFE420AE3; // beq x4, x4, L7
-            default:      RD = 32'hDEADBEEF; // error: pc out of bounds
+            32'h0040000C: RD = 32'hFE420AE3; // beq x4, x4, L7
+            32'h00400010: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h00400014: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h00400018: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h0040001C: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h00400020: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h00400024: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h00400028: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h0040002C: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h00400030: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h00400034: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h00400038: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h0040003C: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h00400040: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h00400044: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h00400048: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h0040004C: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h00400050: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h00400054: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h00400058: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h0040005C: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h00400060: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h00400064: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h00400068: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h0040006C: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h00400070: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h00400074: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h00400078: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h0040007C: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h00400080: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h00400084: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h00400088: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h0040008C: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h00400090: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h00400094: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h00400098: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h0040009C: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h004000A0: RD = 32'h0064A423; // sw x6, 8(x9)
+            default:      RD = 32'h0064A423; // error: pc out of bounds
         endcase
     end
 
@@ -271,7 +308,7 @@ endmodule
 // 32-bit ALU (Behavioral)
 // Each operation needs to be replaced with proper hardware
 module ALU (
-    input        [2:0] Ctrl,
+    input        [2:0]  Ctrl,
     input        [31:0] SrcA,
     input        [31:0] SrcB,
     output logic [31:0] Result,
