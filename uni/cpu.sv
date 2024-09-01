@@ -62,7 +62,7 @@ module cpu (
         .A1(Instr[19:15]),
         .A2(Instr[24:20]),
         .A3(Instr[11:7]),
-        .WE3(),
+        .WE3(RegWrite),
         .WD3(Result),
         .RD1(SrcA),
         .RD2(WriteData)
@@ -205,7 +205,7 @@ module imem (
             32'h00400098: RD = 32'h0064A423; // sw x6, 8(x9)
             32'h0040009C: RD = 32'h0064A423; // sw x6, 8(x9)
             32'h004000A0: RD = 32'h0064A423; // sw x6, 8(x9)
-            default:      RD = 32'h0064A423; // error: pc out of bounds
+            default:      RD = 32'hDEADBEEF; // error: pc out of bounds
         endcase
     end
 
@@ -230,10 +230,8 @@ module register_bank (
 
     // reset logic
     int i;
-    always_ff @ (posedge rst) begin
-        for (i = 0; i<32; i++) begin
-            mem[i] <= 0;            
-        end
+    always_ff @(posedge clk) begin
+        if (rst) for (i = 0; i<32; i++) mem[i] <= 0;
     end
 
     // write logic
@@ -243,8 +241,13 @@ module register_bank (
 
     // read logic
     always_ff @ (posedge clk) begin
-        RD1 <= mem[A1];
-        RD2 <= mem[A2];
+        if (rst) begin
+            RD1 <= 0;
+            RD2 <= 0;
+        end else begin
+            RD1 <= mem[A1];
+            RD2 <= mem[A2];
+        end
     end
 
 endmodule
@@ -297,7 +300,7 @@ module Extend (
             2'b00:   Q = {{20{A[31]}}, A[31:20]};              // I-Type
             2'b01:   Q = {{20{A[31]}}, A[31:25], A[11:7]};     // S-Type
             2'b10:   Q = {{19{A[31]}}, A[31], A[7],A[30:25], A[11:8], 1'b0}; // B-Type
-            default: Q = 32'h00000000; // not used
+            default: Q = 32'hDEADBEEF; // error
         endcase
 
     end
