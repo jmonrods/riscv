@@ -164,10 +164,10 @@ module imem (
 
     always_comb begin
         case (A) // instructions in machine language
-            32'h00400000: RD = 32'hFFC4A303; // lw x6, -4(x9)
+            32'h00400000: RD = 32'h0064A423; // sw x6, 8(x9)
             32'h00400004: RD = 32'h0064A423; // sw x6, 8(x9)
-            32'h00400008: RD = 32'h0062E233; // or x4, x5, x6
-            32'h0040000C: RD = 32'hFE420AE3; // beq x4, x4, L7
+            32'h00400008: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h0040000C: RD = 32'h0064A423; // sw x6, 8(x9)
             32'h00400010: RD = 32'h0064A423; // sw x6, 8(x9)
             32'h00400014: RD = 32'h0064A423; // sw x6, 8(x9)
             32'h00400018: RD = 32'h0064A423; // sw x6, 8(x9)
@@ -236,7 +236,7 @@ module register_bank (
 
     // write logic
     always_ff @ (posedge clk) begin
-        if (WE3) mem[A3] <= WD3;
+        if (WE3 & !rst) mem[A3] <= WD3;
     end
 
     // read logic
@@ -268,19 +268,19 @@ module dmem (
     logic [31:0] mem [logic [31:0]];
 
     // reset logic
-    always @(posedge rst) begin
-        mem.delete();
+    always @(posedge clk) begin
+        if (rst) mem.delete();
     end
 
     // write logic
     always @(posedge clk) begin
-        if (WE) begin
+        if (WE & !rst) begin
             mem[A] = WD;
         end
     end
 
     // read logic
-    always @(posedge clk) begin
+    always @(posedge clk & !rst) begin
         RD = mem[A];
     end
 
