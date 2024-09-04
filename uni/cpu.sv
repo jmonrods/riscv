@@ -27,7 +27,7 @@ module cpu (
 
     // Control signals
     wire        PCSrc;
-    wire        ResultSrc;
+    wire [1:0]  ResultSrc;
     wire        MemWrite;
     wire [2:0]  ALUControl;
     wire        ALUSrc;
@@ -104,16 +104,17 @@ module cpu (
         .clk(clk),
         .rst(rst),
         .WE(MemWrite),
-        .RE(ResultSrc),
+        .RE(ResultSrc[0]),
         .A(ALUResult),
         .WD(WriteData),
         .RD(ReadData)
     );
 
-    mux32 mux2 (
+    mux_out mux2 (
         .sel(ResultSrc),
         .A(ALUResult),
         .B(ReadData),
+        .C(PCPlus4),
         .Q(Result)
     );
 
@@ -304,9 +305,10 @@ module Extend (
     always_comb begin
 
         case (src)
-            2'b00:   Q = {{20{A[31]}}, A[31:20]};              // I-Type
-            2'b01:   Q = {{20{A[31]}}, A[31:25], A[11:7]};     // S-Type
+            2'b00:   Q = {{20{A[31]}}, A[31:20]};                            // I-Type
+            2'b01:   Q = {{20{A[31]}}, A[31:25], A[11:7]};                   // S-Type
             2'b10:   Q = {{19{A[31]}}, A[31], A[7],A[30:25], A[11:8], 1'b0}; // B-Type
+            2'b11:   Q = {{12{A[31]}}, A[19:12], A[20], A[30:21], 1'b0};     // J-Type
             default: Q = 32'hDEADBEEF; // error
         endcase
 
@@ -355,13 +357,35 @@ module mux32 (
 endmodule
 
 
+module mux_out (
+    input        [1:0]  sel,
+    input        [31:0] A,
+    input        [31:0] B,
+    input        [31:0] C,
+    output logic [31:0] Q 
+);
+
+    always_comb begin
+
+        case (sel)
+            2'b00:   Q = A;
+            2'b01:   Q = B;
+            2'b10:   Q = C;
+            default: Q = 0;
+        endcase
+
+    end
+
+endmodule
+
+
 module control_unit (
     input        [6:0] op,
     input        [2:0] funct3,
     input              funct7_bit5,
     input              Zero,
     output logic       PCSrc,
-    output logic       ResultSrc,
+    output logic [1:0] ResultSrc,
     output logic       MemWrite,
     output logic [2:0] ALUControl,
     output logic       ALUSrc,
@@ -372,6 +396,7 @@ module control_unit (
     // Main Decoder
     logic [1:0] ALUOp;
     logic       Branch;
+    logic       Jump;
 
     always_comb begin
 
@@ -380,51 +405,67 @@ module control_unit (
             begin
                 ALUOp     = 2'b00;
                 Branch    = 1'b0;
-                ResultSrc = 1'b1;
+                ResultSrc = 2'b01;
                 MemWrite  = 1'b0;
                 ALUSrc    = 1'b1;
                 ImmSrc    = 2'b00;
                 RegWrite  = 1'b1;
+                Jump      = 1'b0;
             end
             35: // sw
             begin
                 ALUOp     = 2'b00;
                 Branch    = 1'b0;
-                ResultSrc = 1'b0;
+                ResultSrc = 2'b00;
                 MemWrite  = 1'b1;
                 ALUSrc    = 1'b1;
                 ImmSrc    = 2'b01;
                 RegWrite  = 1'b0;
+                Jump      = 1'b0;
             end
             51: // R-type
             begin
                 ALUOp     = 2'b10;
                 Branch    = 1'b0;
-                ResultSrc = 1'b0;
+                ResultSrc = 2'b00;
                 MemWrite  = 1'b0;
                 ALUSrc    = 1'b0;
                 ImmSrc    = 2'b00;
                 RegWrite  = 1'b1;
+                Jump      = 1'b0;
             end
             99: // beq
             begin
                 ALUOp     = 2'b01;
                 Branch    = 1'b1;
-                ResultSrc = 1'b0;
+                ResultSrc = 2'b00;
                 MemWrite  = 1'b0;
                 ALUSrc    = 1'b0;
                 ImmSrc    = 2'b10;
                 RegWrite  = 1'b0;
+                Jump      = 1'b0;
             end
             19: // I-type
             begin
                 ALUOp     = 2'b10;
                 Branch    = 1'b0;
-                ResultSrc = 1'b0;
+                ResultSrc = 2'b00;
                 MemWrite  = 1'b0;
                 ALUSrc    = 1'b1;
                 ImmSrc    = 2'b00;
                 RegWrite  = 1'b1;
+                Jump      = 1'b0;
+            end
+            111: // jal
+            begin
+                ALUOp     = 2'b00;
+                Branch    = 1'b0;
+                ResultSrc = 2'b10;
+                MemWrite  = 1'b0;
+                ALUSrc    = 1'b0;
+                ImmSrc    = 2'b11;
+                RegWrite  = 1'b1;
+                Jump      = 1'b1;
             end
             default: // not implemented
             begin
@@ -440,7 +481,7 @@ module control_unit (
 
     end
 
-    assign PCSrc = Branch && Zero;
+    assign PCSrc = (Branch && Zero) || Jump;
 
 
     // ALU Decoder
