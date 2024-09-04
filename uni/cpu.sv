@@ -9,27 +9,32 @@
 module cpu (
     input clk,
     input rst,
-    output [31:0] ReadData
+    output [31:0] Result
 );
 
+    // Bus signals
     wire [31:0] PC;
     wire [31:0] PCNext;
     wire [31:0] PCPlus4;
     wire [31:0] PCTarget;
     wire [31:0] Instr;
-    wire [1:0]  ImmSrc;
     wire [31:0] ImmExt;
     wire [31:0] SrcA;
     wire [31:0] SrcB;
-    wire        PCSrc;
-    wire        ALUSrc;
-    wire        ResultSrc;
-    wire [2:0]  ALUControl;
     wire [31:0] ALUResult;
-    wire [31:0] Result;
-    wire        MemWrite;
+    wire [31:0] ReadData;
     wire [31:0] WriteData;
-    logic       zero;
+
+    // Control signals
+    wire        PCSrc;
+    wire        ResultSrc;
+    wire        MemWrite;
+    wire [2:0]  ALUControl;
+    wire        ALUSrc;
+    wire [1:0]  ImmSrc;
+    wire        RegWrite;
+    wire        zero;
+
 
     pc pc1 (
         .clk(clk),
@@ -99,6 +104,7 @@ module cpu (
         .clk(clk),
         .rst(rst),
         .WE(MemWrite),
+        .RE(ResultSrc),
         .A(ALUResult),
         .WD(WriteData),
         .RD(ReadData)
@@ -164,10 +170,10 @@ module imem (
 
     always_comb begin
         case (A) // instructions in machine language
-            32'h00400000: RD = 32'h0064A423; // sw x6, 8(x9)
-            32'h00400004: RD = 32'h0064A423; // sw x6, 8(x9)
-            32'h00400008: RD = 32'h0064A423; // sw x6, 8(x9)
-            32'h0040000C: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h00400000: RD = 32'h00400413; // addi x8, x0, 4
+            32'h00400004: RD = 32'h00600493; // addi x9, x0, 6
+            32'h00400008: RD = 32'h00940933; // add x18, x8, x9
+            32'h0040000C: RD = 32'h00940933; // add x18, x8, x9
             32'h00400010: RD = 32'h0064A423; // sw x6, 8(x9)
             32'h00400014: RD = 32'h0064A423; // sw x6, 8(x9)
             32'h00400018: RD = 32'h0064A423; // sw x6, 8(x9)
@@ -259,6 +265,7 @@ module dmem (
     input clk,
     input rst,
     input WE,
+    input RE,
     input [31:0] A,
     input [31:0] WD,
     output logic [31:0] RD
@@ -268,20 +275,20 @@ module dmem (
     logic [31:0] mem [logic [31:0]];
 
     // reset logic
-    always @(posedge clk) begin
+    always_ff @(posedge clk) begin
         if (rst) mem.delete();
     end
 
     // write logic
-    always @(posedge clk) begin
+    always_ff @(posedge clk) begin
         if (WE & !rst) begin
             mem[A] = WD;
         end
     end
 
     // read logic
-    always @(posedge clk & !rst) begin
-        RD = mem[A];
+    always_ff @(posedge clk) begin
+        if (RE & !rst) RD = mem[A];
     end
 
 endmodule
@@ -408,6 +415,16 @@ module control_unit (
                 ALUSrc    = 1'b0;
                 ImmSrc    = 2'b10;
                 RegWrite  = 1'b0;
+            end
+            19: // I-type
+            begin
+                ALUOp     = 2'b10;
+                Branch    = 1'b0;
+                ResultSrc = 1'b0;
+                MemWrite  = 1'b0;
+                ALUSrc    = 1'b1;
+                ImmSrc    = 2'b00;
+                RegWrite  = 1'b1;
             end
             default: // not implemented
             begin

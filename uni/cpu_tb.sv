@@ -15,19 +15,23 @@ module cpu_tb();
     cpu cpu1 (
         .clk(clk),
         .rst(rst),
-        .ReadData(read_data)
+        .Result(read_data)
     );
 
     initial begin
 
         rst <= 1;
         #10 rst <= 0;
+        $display(read_data);
+        #10 $display(read_data);
+        #10 $display(read_data);
+        #10 $display(read_data);
 
     end
 
     initial begin
 
-        clk <= 0;
+        clk <= 1;
         forever #5 clk <= !clk;
 
     end
