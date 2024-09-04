@@ -26,6 +26,17 @@ module cpu_tb();
         #10 $display(read_data);
         #10 $display(read_data);
         #10 $display(read_data);
+        #10 $display(read_data);
+        #10 $display(read_data);
+        #10 $display(read_data);
+        #10 $display(read_data);
+        #10 $display(read_data);
+        #10 $display(read_data);
+        #10 $display(read_data);
+        #10 $display(read_data);
+        #10 $display(read_data);
+        #10 $display(read_data);
+        #10 $display(read_data);
 
     end
 
