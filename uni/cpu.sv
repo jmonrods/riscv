@@ -37,85 +37,86 @@ module cpu (
 
 
     pc pc1 (
-        .clk(clk),
-        .rst(rst),
-        .PCNext(PCNext),
-        .PC(PC)
+        .clk    (clk),
+        .rst    (rst),
+        .PCNext (PCNext),
+        .PC     (PC)
     );
 
     mux32 mux_pc (
-        .sel(PCSrc),
-        .A(PCPlus4),
-        .B(PCTarget),
-        .Q(PCNext)
+        .sel    (PCSrc),
+        .A      (PCPlus4),
+        .B      (PCTarget),
+        .Q      (PCNext)
     );
 
     adder32 pc_plus_4_adder (
-        .A(PC),
-        .B(4),
-        .Q(PCPlus4)
+        .A      (PC),
+        .B      (4),
+        .Q      (PCPlus4)
     );
 
     imem imem1 (
-        .A(PC),
-        .RD(Instr)
+        .A      (PC),
+        .RD     (Instr)
     );
 
     register_bank rb1 (
-        .clk(clk),
-        .rst(rst),
-        .A1(Instr[19:15]),
-        .A2(Instr[24:20]),
-        .A3(Instr[11:7]),
-        .WE3(RegWrite),
-        .WD3(Result),
-        .RD1(SrcA),
-        .RD2(WriteData)
+        .clk    (clk),
+        .rst    (rst),
+        .A1     (Instr[19:15]),
+        .A2     (Instr[24:20]),
+        .A3     (Instr[11:7]),
+        .WE3    (RegWrite),
+        .WD3    (Result),
+        .RD1    (SrcA),
+        .RD2    (WriteData)
     );
 
     Extend ext1 (
-        .src(ImmSrc),
-        .A(Instr[31:0]),
-        .Q(ImmExt)
+        .src    (ImmSrc),
+        .A      (Instr[31:0]),
+        .Q      (ImmExt)
     );
 
     adder32 pc_target_adder (
-        .A(PC),
-        .B(ImmExt),
-        .Q(PCTarget)
+        .A      (PC),
+        .B      (ImmExt),
+        .Q      (PCTarget)
     );
 
     mux32 mux1 (
-        .sel(ALUSrc),
-        .A(WriteData),
-        .B(ImmExt),
-        .Q(SrcB)
+        .sel    (ALUSrc),
+        .A      (WriteData),
+        .B      (ImmExt),
+        .Q      (SrcB)
     );
 
     ALU alu1 (
-        .Ctrl(ALUControl),
-        .SrcA(SrcA),
-        .SrcB(SrcB),
-        .Result(ALUResult),
-        .zero(zero)
+        .Ctrl   (ALUControl),
+        .SrcA   (SrcA),
+        .SrcB   (SrcB),
+        .Result (ALUResult),
+        .zero   (zero)
     );
 
     dmem dmem1 (
-        .clk(clk),
-        .rst(rst),
-        .WE(MemWrite),
-        .RE(ResultSrc[0]),
-        .A(ALUResult),
-        .WD(WriteData),
-        .RD(ReadData)
+        .clk    (clk),
+        .rst    (rst),
+        .WE     (MemWrite),
+        .RE     (ResultSrc[0]),
+        .A      (ALUResult),
+        .WD     (WriteData),
+        .RD     (ReadData)
     );
 
     mux_out mux2 (
-        .sel(ResultSrc),
-        .A(ALUResult),
-        .B(ReadData),
-        .C(PCPlus4),
-        .Q(Result)
+        .sel    (ResultSrc),
+        .A      (ALUResult),
+        .B      (ReadData),
+        .C      (PCPlus4),
+        .D      (),
+        .Q      (Result)
     );
 
     control_unit ctrl1 (
@@ -165,7 +166,7 @@ endmodule
 // Instruction Memory
 // ROM (aligned by 4)
 module imem (
-    input [31:0] A,
+    input        [31:0] A,
     output logic [31:0] RD
 );
 
@@ -186,32 +187,32 @@ module imem (
             32'h00400030: RD = 32'h409409B3; // sub x19, x8, x9
             32'h00400034: RD = 32'h00940933; // add x18, x8, x9
             32'h00400038: RD = 32'h409409B3; // sub x19, x8, x9
-            32'h0040003C: RD = 32'h0064A423; // sw x6, 8(x9)
-            32'h00400040: RD = 32'h0064A423; // sw x6, 8(x9)
-            32'h00400044: RD = 32'h0064A423; // sw x6, 8(x9)
-            32'h00400048: RD = 32'h0064A423; // sw x6, 8(x9)
-            32'h0040004C: RD = 32'h0064A423; // sw x6, 8(x9)
-            32'h00400050: RD = 32'h0064A423; // sw x6, 8(x9)
-            32'h00400054: RD = 32'h0064A423; // sw x6, 8(x9)
-            32'h00400058: RD = 32'h0064A423; // sw x6, 8(x9)
-            32'h0040005C: RD = 32'h0064A423; // sw x6, 8(x9)
-            32'h00400060: RD = 32'h0064A423; // sw x6, 8(x9)
-            32'h00400064: RD = 32'h0064A423; // sw x6, 8(x9)
-            32'h00400068: RD = 32'h0064A423; // sw x6, 8(x9)
-            32'h0040006C: RD = 32'h0064A423; // sw x6, 8(x9)
-            32'h00400070: RD = 32'h0064A423; // sw x6, 8(x9)
-            32'h00400074: RD = 32'h0064A423; // sw x6, 8(x9)
-            32'h00400078: RD = 32'h0064A423; // sw x6, 8(x9)
-            32'h0040007C: RD = 32'h0064A423; // sw x6, 8(x9)
-            32'h00400080: RD = 32'h0064A423; // sw x6, 8(x9)
-            32'h00400084: RD = 32'h0064A423; // sw x6, 8(x9)
-            32'h00400088: RD = 32'h0064A423; // sw x6, 8(x9)
-            32'h0040008C: RD = 32'h0064A423; // sw x6, 8(x9)
-            32'h00400090: RD = 32'h0064A423; // sw x6, 8(x9)
-            32'h00400094: RD = 32'h0064A423; // sw x6, 8(x9)
-            32'h00400098: RD = 32'h0064A423; // sw x6, 8(x9)
-            32'h0040009C: RD = 32'h0064A423; // sw x6, 8(x9)
-            32'h004000A0: RD = 32'h0064A423; // sw x6, 8(x9)
+            32'h0040003C: RD = 32'h00940933; // add x18, x8, x9
+            32'h00400040: RD = 32'h409409B3; // sub x19, x8, x9
+            32'h00400044: RD = 32'h00940933; // add x18, x8, x9
+            32'h00400048: RD = 32'h409409B3; // sub x19, x8, x9
+            32'h0040004C: RD = 32'h00940933; // add x18, x8, x9
+            32'h00400050: RD = 32'h409409B3; // sub x19, x8, x9
+            32'h00400054: RD = 32'h00940933; // add x18, x8, x9
+            32'h00400058: RD = 32'h409409B3; // sub x19, x8, x9
+            32'h0040005C: RD = 32'h00940933; // add x18, x8, x9
+            32'h00400060: RD = 32'h409409B3; // sub x19, x8, x9
+            32'h00400064: RD = 32'h00940933; // add x18, x8, x9
+            32'h00400068: RD = 32'h409409B3; // sub x19, x8, x9
+            32'h0040006C: RD = 32'h00940933; // add x18, x8, x9
+            32'h00400070: RD = 32'h409409B3; // sub x19, x8, x9
+            32'h00400074: RD = 32'h00940933; // add x18, x8, x9
+            32'h00400078: RD = 32'h409409B3; // sub x19, x8, x9
+            32'h0040007C: RD = 32'h00940933; // add x18, x8, x9
+            32'h00400080: RD = 32'h409409B3; // sub x19, x8, x9
+            32'h00400084: RD = 32'h00940933; // add x18, x8, x9
+            32'h00400088: RD = 32'h409409B3; // sub x19, x8, x9
+            32'h0040008C: RD = 32'h00940933; // add x18, x8, x9
+            32'h00400090: RD = 32'h409409B3; // sub x19, x8, x9
+            32'h00400094: RD = 32'h00940933; // add x18, x8, x9
+            32'h00400098: RD = 32'h409409B3; // sub x19, x8, x9
+            32'h0040009C: RD = 32'h00940933; // add x18, x8, x9
+            32'h004000A0: RD = 32'h409409B3; // sub x19, x8, x9
             default:      RD = 32'hDEADBEEF; // error: pc out of bounds
         endcase
     end
@@ -362,6 +363,7 @@ module mux_out (
     input        [31:0] A,
     input        [31:0] B,
     input        [31:0] C,
+    input        [31:0] D,
     output logic [31:0] Q 
 );
 
@@ -371,6 +373,7 @@ module mux_out (
             2'b00:   Q = A;
             2'b01:   Q = B;
             2'b10:   Q = C;
+            2'b11:   Q = D;
             default: Q = 0;
         endcase
 
@@ -489,15 +492,15 @@ module control_unit (
     always_comb begin
 
         case ({ALUOp,funct3,op[5],funct7_bit5})
-            7'b00xxxxx: ALUControl = 3'b000;
-            7'b01xxxxx: ALUControl = 3'b001;
-            7'b1000000: ALUControl = 3'b000;
-            7'b1000001: ALUControl = 3'b000;
-            7'b1000010: ALUControl = 3'b000;
-            7'b1000011: ALUControl = 3'b001;
-            7'b10010xx: ALUControl = 3'b101;
-            7'b10110xx: ALUControl = 3'b011;
-            7'b10111xx: ALUControl = 3'b010;
+            7'b00xxxxx: ALUControl = 3'b000; // lw, sw
+            7'b01xxxxx: ALUControl = 3'b001; // beq
+            7'b1000000: ALUControl = 3'b000; // add
+            7'b1000001: ALUControl = 3'b000; // add
+            7'b1000010: ALUControl = 3'b000; // add
+            7'b1000011: ALUControl = 3'b001; // sub
+            7'b10010xx: ALUControl = 3'b101; // slt
+            7'b10110xx: ALUControl = 3'b011; // or
+            7'b10111xx: ALUControl = 3'b010; // and
             default:    ALUControl = 3'b000;
         endcase
 
