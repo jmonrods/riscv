@@ -92,12 +92,15 @@ module cpu (
         .Q      (SrcB)
     );
 
-    ALU alu1 (
-        .Ctrl   (ALUControl),
-        .SrcA   (SrcA),
-        .SrcB   (SrcB),
-        .Result (ALUResult),
-        .zero   (zero)
+    alu alu1 (
+        .ALUControl   (ALUControl),
+        .A            (SrcA),
+        .B            (SrcB),
+        .Result       (ALUResult),
+        .oVerflow     (),
+        .Carry        (),
+        .Negative     (),
+        .Zero         (zero)
     );
 
     dmem dmem1 (
@@ -110,7 +113,7 @@ module cpu (
         .RD     (ReadData)
     );
 
-    mux_out mux2 (
+    mux_alu_out mux_alu (
         .sel    (ResultSrc),
         .A      (ALUResult),
         .B      (ReadData),
@@ -311,7 +314,7 @@ endmodule
 
 // 32-bit ALU (Behavioral)
 // Each operation needs to be replaced with proper hardware
-module ALU (
+/* module ALU (
     input        [2:0]  Ctrl,
     input        [31:0] SrcA,
     input        [31:0] SrcB,
@@ -334,7 +337,7 @@ module ALU (
 
     assign zero = (Result == 0) ? 1 : 0;
 
-endmodule
+endmodule */
 
 
 module mux32 (
@@ -349,7 +352,7 @@ module mux32 (
 endmodule
 
 
-module mux_out (
+module mux_alu_out (
     input        [1:0]  sel,
     input        [31:0] A,
     input        [31:0] B,
