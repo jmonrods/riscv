@@ -87,8 +87,8 @@ module adder_ripple_carry (
                 full_adder f_add_n (
                 .A(A[i]),
                 .B(B[i]),
-                .Cin(cin_n[i]),
-                .Cout(Cin),
+                .Cin(Cin),
+                .Cout(cin_n[i]),
                 .S(S[i])
             );
             end else if (i<31) begin

@@ -31,35 +31,30 @@ module alu_tb ();
     initial begin
 
         // Test values
-        A = 32'h01234567;
+        A = 32'h01233567;
         B = 32'h76543210;
         $display("%t ps: A = 32'h%h",$time,A);
         $display("%t ps: B = 32'h%h",$time,B);
 
         // Add
-        #100;
         ALUControl = 3'b000;
-        $display("%t ps: A + B   = 32'h%h, VCNZ: %b%b%b%b",$time,Result,V,C,N,Z);
+        #50 $display("%t ps: A + B   = 32'h%h, VCNZ: %b%b%b%b",$time,Result,V,C,N,Z);
         
         // Sub
-        #100;
-        ALUControl = 3'b001;
-        $display("%t ps: A - B   = 32'h%h, VCNZ: %b%b%b%b",$time,Result,V,C,N,Z);
+        #50 ALUControl = 3'b001;
+        #50 $display("%t ps: A - B   = 32'h%h, VCNZ: %b%b%b%b",$time,Result,V,C,N,Z);
 
         // And
-        #100;
-        ALUControl = 3'b010;
-        $display("%t ps: A & B   = 32'h%h, VCNZ: %b%b%b%b",$time,Result,V,C,N,Z);
+        #50 ALUControl = 3'b010;
+        #50 $display("%t ps: A & B   = 32'h%h, VCNZ: %b%b%b%b",$time,Result,V,C,N,Z);
 
         // Or
-        #100;
-        ALUControl = 3'b011;
-        $display("%t ps: A | B   = 32'h%h, VCNZ: %b%b%b%b",$time,Result,V,C,N,Z);
+        #50 ALUControl = 3'b011;
+        #50 $display("%t ps: A | B   = 32'h%h, VCNZ: %b%b%b%b",$time,Result,V,C,N,Z);
 
         // SLT
-        #100;
-        ALUControl = 3'b101;
-        $display("%t ps: A slt B = 32'h%h, VCNZ: %b%b%b%b",$time,Result,V,C,N,Z);
+        #50 ALUControl = 3'b101;
+        #50 $display("%t ps: A slt B = 32'h%h, VCNZ: %b%b%b%b",$time,Result,V,C,N,Z);
         
         // End
         #100;
