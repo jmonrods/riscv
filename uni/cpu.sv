@@ -248,15 +248,8 @@ module register_bank (
     end
 
     // read logic
-    always_ff @ (posedge clk) begin
-        if (rst) begin
-            RD1 <= 0;
-            RD2 <= 0;
-        end else begin
-            RD1 <= mem[A1];
-            RD2 <= mem[A2];
-        end
-    end
+    assign RD1 = (A1 == 0) ? 32'h00000000 : mem[A1];
+    assign RD2 = (A1 == 0) ? 32'h00000000 : mem[A2];
 
 endmodule
 
@@ -289,9 +282,7 @@ module dmem (
     end
 
     // read logic
-    always_ff @(posedge clk) begin
-        if (RE & !rst) RD = mem[A];
-    end
+    assign RD = (RE == 1'b1) ? mem[A] : 32'hDEADBEEF;
 
 endmodule
 
