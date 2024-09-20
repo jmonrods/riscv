@@ -239,15 +239,11 @@ module register_bank (
     // array of static memory
     logic [31:0] mem[32];
 
-    // reset logic
+    // write logic
     int i;
     always_ff @(posedge clk) begin
         if (rst) for (i = 0; i<32; i++) mem[i] <= 0;
-    end
-
-    // write logic
-    always_ff @ (posedge clk) begin
-        if (WE3 & !rst) mem[A3] <= WD3;
+	else if (WE3) mem[A3] <= WD3;
     end
 
     // read logic
@@ -272,16 +268,10 @@ module dmem (
     // associative array: dynamic memory
     logic [31:0] mem [logic [31:0]];
 
-    // reset logic
-    always_ff @(posedge clk) begin
-        if (rst) mem.delete();
-    end
-
     // write logic
     always_ff @(posedge clk) begin
-        if (WE & !rst) begin
-            mem[A] = WD;
-        end
+        if (rst) mem.delete();
+	else if (WE) mem[A] = WD;
     end
 
     // read logic
