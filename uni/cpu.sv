@@ -275,7 +275,10 @@ module dmem (
     end
 
     // read logic
-    assign RD = (RE == 1'b1) ? mem[A] : 32'hDEADBEEF;
+    always_ff @(posedge clk) begin
+        if (RE & !rst) RD = mem[A];
+        else           RD = 32'hDEADBEEF;
+    end
 
 endmodule
 

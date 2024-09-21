@@ -1,4 +1,7 @@
+work/
 modelsim.ini
 vsim.wlf
-work/
+vsim.dbg
 transcript
+coverage.ucdb
+coverage.txt
