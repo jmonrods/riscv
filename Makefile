@@ -23,6 +23,13 @@ imem_rand_cov: clean
 	vlog +cover -sv ./uni_rand_cov/imem_tb.sv ./uni_rand_cov/imem.sv
 	vsim -c -coverage work.imem_tb -do "coverage save -onexit coverage.ucdb; run -all; quit -f;"
 	vcover report coverage.ucdb
+	
+cpu_fulltest: clean
+	vlib work
+	vmap work work
+	vlog +cover -sv ./uni_rand_fulltest/cpu_tb.sv ./uni_rand_fulltest/cpu.sv ./uni_rand_fulltest/imem.sv ./uni_rand_fulltest/alu.sv
+	vsim -c -coverage work.cpu_tb -do "coverage save -onexit coverage.ucdb; run -all; quit -f;"
+	vcover report coverage.ucdb
 
 clean:
 	rm ./vsim.wlf -f
