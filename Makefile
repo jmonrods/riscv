@@ -8,7 +8,7 @@ cpu_directed_cov: clean
 	vlib work
 	vmap work work
 	vlog -sv +cover ./uni/cpu_tb.sv ./uni/cpu.sv ./uni/alu.sv
-	vsim -c -coverage work.cpu_tb -do "coverage report -output coverage.txt; coverage save coverage.ucdb; run -all; quit -f;"
+	vsim -c -coverage work.cpu_tb -do "coverage save -onexit coverage.ucdb; run -all; quit -f;"
 	vcover report coverage.ucdb
 
 imem_randomizer: clean
@@ -16,6 +16,13 @@ imem_randomizer: clean
 	vmap work work
 	vlog -sv ./uni_rand/imem_tb.sv ./uni_rand/imem.sv
 	vsim -c work.imem_tb -do "run -all; quit -f;"
+
+imem_rand_cov: clean
+	vlib work
+	vmap work work
+	vlog +cover -sv ./uni_rand_cov/imem_tb.sv ./uni_rand_cov/imem.sv
+	vsim -c -coverage work.imem_tb -do "coverage save -onexit coverage.ucdb; run -all; quit -f;"
+	vcover report coverage.ucdb
 
 clean:
 	rm ./vsim.wlf -f
