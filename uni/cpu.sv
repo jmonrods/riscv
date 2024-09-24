@@ -248,7 +248,7 @@ module register_bank (
 
     // read logic
     assign RD1 = (A1 == 0) ? 32'h00000000 : mem[A1];
-    assign RD2 = (A1 == 0) ? 32'h00000000 : mem[A2];
+    assign RD2 = (A2 == 0) ? 32'h00000000 : mem[A2];
 
 endmodule
 
