@@ -17,15 +17,15 @@ module alu (
     output logic        Zero
 );
 
-    wire [31:0] A_a2;
+    wire [31:0] B_a2;
     wire [31:0] Sum;
     wire [31:0] S_slt;
 
-    assign A_a2 = (ALUControl[0]) ? ~A : A;
+    assign B_a2 = (ALUControl[0]) ? ~B : B;
 
     adder_ripple_carry add1 (
-        .A      (A_a2),
-        .B      (B),
+        .A      (A),
+        .B      (B_a2),
         .Cin    (ALUControl[0]),
         .Cout   (Cout),
         .S      (Sum)
