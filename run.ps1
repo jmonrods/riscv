@@ -28,11 +28,12 @@ Write-Host $REPO
 
 # Run the simulation now
 if ($Argument -eq "clean") {
-    Remove-Item $REPO\work\ -Recurse -ErrorAction SilentlyContinue
-    Remove-Item $REPO\modelsim.ini   -ErrorAction SilentlyContinue
-    Remove-Item $REPO\transcript     -ErrorAction SilentlyContinue
-    Remove-Item $REPO\vsim.wlf       -ErrorAction SilentlyContinue
-    Remove-Item $REPO\coverage.ucdb  -ErrorAction SilentlyContinue
+    Remove-Item $REPO\work\ -Recurse           -ErrorAction SilentlyContinue
+    Remove-Item $REPO\modelsim.ini             -ErrorAction SilentlyContinue
+    Remove-Item $REPO\transcript               -ErrorAction SilentlyContinue
+    Remove-Item $REPO\vsim.wlf                 -ErrorAction SilentlyContinue
+	Remove-Item $REPO\vsim_stacktrace.vstf     -ErrorAction SilentlyContinue
+    Remove-Item $REPO\coverage.ucdb            -ErrorAction SilentlyContinue
 } elseif ($Argument -eq "cpu_00") {
     vlib work
 	vmap work work
@@ -66,11 +67,11 @@ if ($Argument -eq "clean") {
 	vlog +cover -sv ./uni_rand_fulltest/cpu_tb.sv ./uni_rand_fulltest/cpu.sv ./uni_rand_fulltest/imem.sv ./uni_rand_fulltest/alu.sv
 	vsim -c -coverage work.cpu_tb -do "coverage save -onexit coverage.ucdb; run -all; quit -f;"
 	vcover report coverage.ucdb
-} elseif ($Argument -eq "cpu_05_sandbox") {
+} elseif ($Argument -eq "uvm_primer_tinyalu") {
     vlib work
 	vmap work work
-	vcom -f ./uni_sandbox/dut.f
-	vlog -f ./uni_sandbox/tb.f
+	vcom -f ./uvm_primer_tinyalu/dut.f
+	vlog -f ./uvm_primer_tinyalu/tb.f
 	vopt top -o top_optimized +cover=sbfec
     vsim -c top_optimized -coverage -do "set NoQuitOnFinish 1; onbreak {resume}; log /* -r; run -all; coverage save -onexit coverage.ucdb; quit;"
 	vcover report coverage.ucdb
