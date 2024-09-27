@@ -9,18 +9,8 @@ class tester;
 
     task execute();
 
-        Instruction in;
-
         bfm.reset_cpu();
-
-        repeat (10) begin
-            @(posedge bfm.clk);
-            in = new();
-            `SV_RAND_CHECK(in.randomize());
-            bfm.Instr = in.instr;
-            in.print_instr();
-        end
-
+        repeat (10) bfm.send_instruction();
         $finish();
         
     endtask : execute

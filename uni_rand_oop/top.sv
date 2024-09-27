@@ -1,3 +1,4 @@
+`timescale 1ns/1ps
 
 module top();
 
@@ -12,8 +13,8 @@ module top();
     cpu DUT (
         .rst(bfm.rst),
         .clk(bfm.clk),
-        .Instr(bfm.Instr),
-        .Result(bfm.Result)
+        .Instr(bfm.instr),
+        .Result(bfm.result)
     );
 
     cpu_bfm bfm ();
