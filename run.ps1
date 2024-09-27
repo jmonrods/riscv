@@ -73,6 +73,13 @@ if ($Argument -eq "clean") {
 	vlog -f ./uni_sandbox/tb.f
 	vopt top -o top_optimized +acc +cover=sbfec
     vsim -c top_optimized -coverage -do "set NoQuitOnFinish 1; onbreak {resume}; log /* -r; run -all; quit;" 
+} elseif ($Argument -eq "cpu_05") {
+    vlib work
+	vmap work work
+	vlog -sv -f ./uni_rand_oop/dut.f
+	vlog -f ./uni_rand_oop/tb.f
+	vopt top -o top_optimized +acc +cover=sbfec
+    vsim -c top_optimized -coverage -do "set NoQuitOnFinish 1; onbreak {resume}; log /* -r; run -all; quit;" 
 } else {
     Write-Host "Target not specified OR the specified target was not found."
     Write-Host "Call the command from the top as: > .\run.ps1 cpu_02"
