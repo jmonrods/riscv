@@ -82,7 +82,7 @@ if ($Argument -eq "clean") {
 	vlog -f ./uni_rand_oop/tb.f
 	vopt top -o top_optimized +cover=sbfec
     vsim -c top_optimized -coverage -do "set NoQuitOnFinish 1; onbreak {resume}; log /* -r; run -all; coverage save -onexit coverage.ucdb; quit;"
-	vcover report coverage.ucdb
+	#vcover report coverage.ucdb
 } else {
     Write-Host "Target not specified OR the specified target was not found."
     Write-Host "Call the command from the top as: > .\run.ps1 cpu_02"

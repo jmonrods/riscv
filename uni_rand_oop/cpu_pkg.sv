@@ -44,21 +44,21 @@ package cpu_pkg;
 				end
 				AND:
 				begin
-					opcode = 7'b0010011;
+					opcode = 7'b0110011;
 					funct3 = 3'b111;
 					funct7 = 7'b0000000;
 					instr  = {funct7,rs2,rs1,funct3,rd,opcode};
 				end
 				OR:
 				begin
-					opcode = 7'b0010011;
+					opcode = 7'b0110011;
 					funct3 = 3'b110;
 					funct7 = 7'b0000000;
 					instr  = {funct7,rs2,rs1,funct3,rd,opcode};
 				end
 				SLT:
 				begin
-					opcode = 7'b0010011;
+					opcode = 7'b0110011;
 					funct3 = 3'b010;
 					funct7 = 7'b0000000;
 					instr  = {funct7,rs2,rs1,funct3,rd,opcode};
