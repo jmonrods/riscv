@@ -79,7 +79,7 @@ if ($Argument -eq "clean") {
     vlib work
 	vmap work work
 	vlog -sv -f ./uni_rand_oop/dut.f
-	vlog -f ./uni_rand_oop/tb.f
+	vlog -sv -f ./uni_rand_oop/tb.f
 	vopt top -o top_optimized +cover=sbfec
     vsim -c top_optimized -coverage -do "set NoQuitOnFinish 1; onbreak {resume}; log /* -r; run -all; coverage save -onexit coverage.ucdb; quit;"
 	#vcover report coverage.ucdb
