@@ -32,7 +32,7 @@ interface cpu_bfm;
 
         in = new();
         `SV_RAND_CHECK(in.randomize());
-        in.print_instr();
+        //in.print_instr();
 
         instr = in.instr;
         

@@ -4,7 +4,7 @@ module top();
 
     import cpu_pkg::*;
 
-    `include "cpu_macros.svh"    
+    `include "cpu_macros.svh"
     `include "coverage.svh"
     `include "tester.svh"
     `include "scoreboard.svh"

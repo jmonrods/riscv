@@ -32,7 +32,7 @@ class scoreboard;
             register_bank[bfm.in.rd] = (bfm.in.rd == 0) ? 32'h00000000 : predicted_result;
 
             if (predicted_result !== bfm.result) $error("FAILED: rd: %0d  rs1: %0d  rs2: %0d  imm: %0d  op: %s  result: 0x%0h  expected: 0x%0h", bfm.in.rd, bfm.in.rs1, bfm.in.rs2, bfm.in.imm, bfm.in.operation.name(), bfm.result, predicted_result);
-            else $display("PASSED: rd: %0d  rs1: %0d  rs2: %0d  imm: %0d  op: %s  result: 0x%0h  expected: 0x%0h", bfm.in.rd, bfm.in.rs1, bfm.in.rs2, bfm.in.imm, bfm.in.operation.name(), bfm.result, predicted_result);
+            //else $display("PASSED: rd: %0d  rs1: %0d  rs2: %0d  imm: %0d  op: %s  result: 0x%0h  expected: 0x%0h", bfm.in.rd, bfm.in.rs1, bfm.in.rs2, bfm.in.imm, bfm.in.operation.name(), bfm.result, predicted_result);
 
         end : self_checker
     

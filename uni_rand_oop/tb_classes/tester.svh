@@ -10,7 +10,7 @@ class tester;
     task execute();
 
         bfm.reset_cpu();
-        repeat (40) bfm.send_instruction();
+        repeat (400000) bfm.send_instruction();
         $finish();
         
     endtask : execute
