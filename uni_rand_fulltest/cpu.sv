@@ -421,7 +421,7 @@ module control_unit (
 
     always_comb begin
 
-        case ({ALUOp,funct3,op[5],funct7_bit5})
+        casex ({ALUOp,funct3,op[5],funct7_bit5})
             7'b00xxxxx: ALUControl = 3'b000; // lw, sw
             7'b01xxxxx: ALUControl = 3'b001; // beq
             7'b1000000: ALUControl = 3'b000; // add
