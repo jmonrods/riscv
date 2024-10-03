@@ -90,12 +90,11 @@ if ($Argument -eq "clean") {
 	vlog -sv `
 		./uni_uvm/cpu/alu.sv `
 		./uni_uvm/cpu/cpu.sv `
-		./uni_uvm/cpu/cpu_pkg.sv `
-		./uni_uvm/cpu/cpu_bfm.sv `
+		./uni_uvm/uvm_tb/cpu_pkg.sv `
+		./uni_uvm/uvm_tb/cpu_bfm.sv `
 		./uni_uvm/top.sv `
-		+incdir+./uni_uvm/cpu `
 		+incdir+./uni_uvm/uvm_tb
-	vopt top -o top_optimized +cover=sbfec
+	vopt top -o top_optimized +cover=sbfec+cpu
     vsim -c +UVM_TESTNAME="random_test" top_optimized -coverage -do "set NoQuitOnFinish 1; onbreak {resume}; log /* -r; run -all; coverage save -onexit coverage.ucdb; quit;"
 	vcover report coverage.ucdb
 } else {
