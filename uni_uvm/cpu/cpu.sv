@@ -15,7 +15,6 @@ module cpu (
 );
 
     // Bus signals
-    wire [31:0] PC;
     wire [31:0] PCNext;
     wire [31:0] PCPlus4;
     wire [31:0] PCTarget;

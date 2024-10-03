@@ -4,16 +4,16 @@ class random_test extends uvm_test;
     `uvm_component_utils(random_test);
 
     // declare a virtual bfm, to be passed in the constructor
-    virtual interface cpu_bfm bfm;
+    virtual cpu_bfm bfm;
 
     // constructor
-    function new (string_name. uvm_component_parent);
+    function new (string name, uvm_component parent);
         
         // the next line is required by uvm
-        super.new(name,parent);
+        super.new(name, parent);
 
         // use the get() method from uvm_config_db to acquire the bfm which was stored by top.sv
-        if(!uvm_config_db #virtual interface cpu_bfm)::get(null, "*", "bfm", bfm)
+        if(!uvm_config_db #(virtual cpu_bfm)::get(null, "*", "bfm", bfm))
             $fatal("Failed to get BFM");
 
     endfunction : new

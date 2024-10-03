@@ -1,5 +1,8 @@
 package cpu_pkg;
 
+	import uvm_pkg::*;
+	`include "uvm_macros.svh"
+
     typedef enum {ADDI, ADD, SUB, AND, OR, SLT} op_e;
 	
 	class Instruction;
@@ -77,5 +80,10 @@ package cpu_pkg;
 		endfunction 
 	
 	endclass
+
+	`include "scoreboard.svh"
+	`include "coverage.svh"
+	`include "random_tester.svh"
+	`include "random_test.svh"
 
 endpackage

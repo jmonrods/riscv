@@ -32,7 +32,7 @@ module top();
     initial begin
         
         // use the set() method from uvm_config_db to store the bfm into the config database
-        uvm_config_db #(virtual interface cpu_bfm)::set(null, "*", "bfm", bfm);
+        uvm_config_db #(virtual cpu_bfm)::set(null, "*", "bfm", bfm);
 
         // run the test
         run_test();
