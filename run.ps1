@@ -83,6 +83,24 @@ if ($Argument -eq "clean") {
 	vopt top -o top_optimized +cover=sbfec
     vsim -c top_optimized -coverage -do "set NoQuitOnFinish 1; onbreak {resume}; log /* -r; run -all; coverage save -onexit coverage.ucdb; quit;"
 	vcover report coverage.ucdb
+} elseif ($Argument -eq "cpu_06") {
+	# UVM testbench
+    vlib work
+	vmap work work
+	vlog -sv `
+		./uni_uvm/cpu/alu.sv `
+		./uni_uvm/cpu/cpu.sv
+		./uni_uvm/cpu/cpu_bfm.sv `
+		./uni_uvm/cpu/cpu_macros.sv `
+		./uni_uvm/cpu/cpu_pkg.sv
+	vlog -sv `
+		./uni_uvm/top.sv `
+		./uni_uvm/random_tester.svh `
+		./uni_uvm/coverage.svh `
+		./uni_uvm/scoreboard.svh
+	vopt top -o top_optimized +cover=sbfec
+    vsim -c top_optimized -coverage -do "set NoQuitOnFinish 1; onbreak {resume}; log /* -r; run -all; coverage save -onexit coverage.ucdb; quit;"
+	vcover report coverage.ucdb
 } else {
     Write-Host "Target not specified OR the specified target was not found."
     Write-Host "Call the command from the top as: > .\run.ps1 cpu_02"
