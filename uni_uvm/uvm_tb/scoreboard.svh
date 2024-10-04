@@ -1,14 +1,19 @@
 // scoreboard: checks if the cpu is working
-class scoreboard;
+class scoreboard extends uvm_component;
+    `uvm_component_utils(scoreboard);
 
     virtual cpu_bfm bfm;
 
-    function new (virtual cpu_bfm b);
-        bfm = b;
+    function new (string name, uvm_component parent);
+        super.new(name, parent);
     endfunction : new
 
+    function void build_phase(uvm_phase phase);
+        if(!uvm_config_db #(virtual cpu_bfm)::get(null, "*", "bfm", bfm))
+            $fatal("Failed to get BFM");
+    endfunction : build_phase
 
-    task execute();
+    task run_phase(uvm_phase phase);
         
         logic [31:0] predicted_result;
         logic [31:0] register_bank [32];
@@ -36,7 +41,7 @@ class scoreboard;
 
         end : self_checker
     
-    endtask
+    endtask : run_phase
 
 endclass
 

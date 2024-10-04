@@ -53,6 +53,21 @@ cpu_05: clean
 	vsim -c top_optimized -coverage -do "set NoQuitOnFinish 1; onbreak {resume}; log /* -r; run -all; coverage save -onexit coverage.ucdb; quit;"
 	#vcover report coverage.ucdb
 
+# ./uni_uvm/: UVM testbench
+cpu_06: clean
+	vlib work
+	vmap work work
+	vlog -sv \
+		./uni_uvm/cpu/alu.sv \
+		./uni_uvm/cpu/cpu.sv \
+		./uni_uvm/uvm_tb/cpu_pkg.sv \
+		./uni_uvm/uvm_tb/cpu_bfm.sv \
+		./uni_uvm/top.sv \
+		+incdir+./uni_uvm/uvm_tb
+	vopt top -o top_optimized +cover=sbfec+cpu
+	vsim -c +UVM_TESTNAME="random_test" top_optimized -coverage -do "set NoQuitOnFinish 1; onbreak {resume}; log /* -r; run -all; coverage save -onexit coverage.ucdb; quit;"
+	vcover report coverage.ucdb
+
 # clean: removes output files
 clean:
 	rm ./vsim.wlf -f

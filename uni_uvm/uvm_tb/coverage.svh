@@ -1,5 +1,6 @@
 // coverage: captures functional coverage information
-class coverage;
+class coverage extends uvm_component;
+    `uvm_component_utils(coverage);
 
     virtual cpu_bfm bfm;
 
@@ -14,18 +15,25 @@ class coverage;
         }
     endgroup
 
-    function new (virtual cpu_bfm b);
-        bfm = b;
+    function new (string name, uvm_component parent);
+        super.new(name, parent);
         CovInsOp = new();
         cov_slt_results_true_false = new();
     endfunction : new
 
-    task execute();
+    function void build_phase(uvm_phase phase);
+        if(!uvm_config_db #(virtual cpu_bfm)::get(null, "*", "bfm", bfm))
+            $fatal("Failed to get BFM");
+    endfunction : build_phase
+
+    task run_phase(uvm_phase phase);
+
         forever begin : sampling_block
             @(posedge bfm.clk) #1;
             CovInsOp.sample();
             if (bfm.in.operation == SLT) cov_slt_results_true_false.sample();
         end : sampling_block
-    endtask : execute
+    
+    endtask : run_phase
 
 endclass

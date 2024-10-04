@@ -3,6 +3,11 @@ class random_test extends uvm_test;
     // register this test into the uvm factory
     `uvm_component_utils(random_test);
 
+    // instantiate the tester class
+        random_tester random_tester_h;
+        coverage      coverage_h;
+        scoreboard    scoreboard_h;
+
     // declare a virtual bfm, to be passed in the constructor
     virtual cpu_bfm bfm;
 
@@ -18,35 +23,13 @@ class random_test extends uvm_test;
 
     endfunction : new
 
-
-    // now we write the code for the random test
-    task run_phase(uvm_phase phase);
-
-        // instantiate the tester class
-        random_tester random_tester_h;
-        coverage      coverage_h;
-        scoreboard    scoreboard_h;
-
-        // we make the test active by raising an objection (test cannot stop if an objection is raised)
-        phase.raise_objection(this);
+    function void build_phase(uvm_phase phase);
 
         // create new objects of the classes
-        random_tester_h = new(bfm);
-        coverage_h      = new(bfm);
-        scoreboard_h    = new(bfm);
+        random_tester_h = new("tester_h",     this);
+        coverage_h      = new("coverage_h",   this);
+        scoreboard_h    = new("scoreboard_h", this);
 
-        // run the coverage and scoreboard in the background (parallel threads)
-        fork
-            coverage_h.execute();
-            scoreboard_h.execute();
-        join_none
-
-        // run the random test in the front
-        random_tester_h.execute();
-
-        // if all is done, drop the objection (test can stop since now there is no objection to stop it)
-        phase.drop_objection(this);
-
-    endtask : run_phase
+    endfunction
 
 endclass
