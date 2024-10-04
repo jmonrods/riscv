@@ -74,8 +74,8 @@ class scoreboard extends uvm_component;
 
             register_bank[rd] = (rd == 0) ? 32'h00000000 : predicted_result;
 
-            if (predicted_result !== bfm.result) $error("FAILED: rd: %0d  rs1: %0d  rs2: %0d  imm: %0d  op: %s  result: 0x%0h  expected: 0x%0h", rd, rs1, rs2, imm, operation.name(), bfm.result, predicted_result);
-            else $display("PASSED: rd: %0d  rs1: %0d  rs2: %0d  imm: %0d  op: %s  result: 0x%0h  expected: 0x%0h", rd, rs1, rs2, imm, operation.name(), bfm.result, predicted_result);
+            if (predicted_result !== bfm.result) $error("FAILED: rd: %2d  rs1: %2d  rs2: %2d  imm: %4d  op: %4s  result: 0x%8h  expected: 0x%8h", rd, rs1, rs2, imm, operation.name(), bfm.result, predicted_result);
+            else $display("PASSED: rd: %2d  rs1: %2d  rs2: %2d  imm: %4d  op: %4s  result: 0x%8h  expected: 0x%8h", rd, rs1, rs2, imm, operation.name(), bfm.result, predicted_result);
 
         end : self_checker
     

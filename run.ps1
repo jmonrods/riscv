@@ -67,14 +67,6 @@ if ($Argument -eq "clean") {
 	vlog +cover -sv ./uni_rand_fulltest/cpu_tb.sv ./uni_rand_fulltest/cpu.sv ./uni_rand_fulltest/imem.sv ./uni_rand_fulltest/alu.sv
 	vsim -c -coverage work.cpu_tb -do "coverage save -onexit coverage.ucdb; run -all; quit -f;"
 	vcover report coverage.ucdb
-} elseif ($Argument -eq "uvm_primer_tinyalu") {
-    vlib work
-	vmap work work
-	vcom -f ./uvm_primer_tinyalu/dut.f
-	vlog -f ./uvm_primer_tinyalu/tb.f
-	vopt top -o top_optimized +cover=sbfec
-    vsim -c top_optimized -coverage -do "set NoQuitOnFinish 1; onbreak {resume}; log /* -r; run -all; coverage save -onexit coverage.ucdb; quit;"
-	vcover report coverage.ucdb
 } elseif ($Argument -eq "cpu_05") {
     vlib work
 	vmap work work
@@ -95,7 +87,9 @@ if ($Argument -eq "clean") {
 		./uni_uvm/top.sv `
 		+incdir+./uni_uvm/uvm_tb
 	vopt top -o top_optimized +cover=sbfec+cpu
-    vsim -c +UVM_TESTNAME="random_test" top_optimized -coverage -do "set NoQuitOnFinish 1; onbreak {resume}; log /* -r; run -all; coverage save -onexit coverage.ucdb; quit;"
+	vsim -c +UVM_TESTNAME="add_test" top_optimized -coverage -do "set NoQuitOnFinish 1; onbreak {resume}; log /* -r; run -all; coverage save -onexit coverage.ucdb; quit;"
+	vcover report coverage.ucdb
+	vsim -c +UVM_TESTNAME="random_test" top_optimized -coverage -do "set NoQuitOnFinish 1; onbreak {resume}; log /* -r; run -all; coverage save -onexit coverage.ucdb; quit;"
 	vcover report coverage.ucdb
 } else {
     Write-Host "Target not specified OR the specified target was not found."
