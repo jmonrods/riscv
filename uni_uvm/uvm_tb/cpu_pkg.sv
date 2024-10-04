@@ -84,6 +84,7 @@ package cpu_pkg;
 	`include "scoreboard.svh"
 	`include "coverage.svh"
 	`include "random_tester.svh"
+	`include "env.svh"
 	`include "random_test.svh"
 
 endpackage

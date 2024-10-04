@@ -3,10 +3,8 @@ class random_test extends uvm_test;
     // register this test into the uvm factory
     `uvm_component_utils(random_test);
 
-    // instantiate the tester class
-    random_tester random_tester_h;
-    coverage      coverage_h;
-    scoreboard    scoreboard_h;
+    // instantiate the environment class
+    env env_h;
 
     // declare a virtual bfm, to be passed in the constructor
     virtual cpu_bfm bfm;
@@ -25,10 +23,7 @@ class random_test extends uvm_test;
 
     function void build_phase(uvm_phase phase);
 
-        // create new objects of the classes
-        random_tester_h = new("tester_h",     this);
-        coverage_h      = new("coverage_h",   this);
-        scoreboard_h    = new("scoreboard_h", this);
+        env_h = env::type_id::create("env_h",this);
 
     endfunction
 
