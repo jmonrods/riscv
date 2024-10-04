@@ -18,6 +18,16 @@ class scoreboard extends uvm_component;
         logic [31:0] predicted_result;
         logic [31:0] register_bank [32];
 
+        logic [4:0]  rs1;
+        logic [4:0]  rs2;
+        logic [4:0]  rd;
+        logic [11:0] imm;
+        logic [6:0]  opcode;
+        logic [2:0]  funct3;
+        logic [6:0]  funct7;
+
+        op_e operation;
+
         int i;
         for (i=0; i<32; i++) register_bank[i] = 0;
 
@@ -25,19 +35,47 @@ class scoreboard extends uvm_component;
             
             @(posedge bfm.clk) #1;
 
-            case(bfm.in.operation)
-                ADD:  predicted_result = register_bank[bfm.in.rs1] + register_bank[bfm.in.rs2];
-                SUB:  predicted_result = register_bank[bfm.in.rs1] - register_bank[bfm.in.rs2];
-                AND:  predicted_result = register_bank[bfm.in.rs1] & register_bank[bfm.in.rs2];
-                OR:   predicted_result = register_bank[bfm.in.rs1] | register_bank[bfm.in.rs2];
-                SLT:  predicted_result = ($signed(register_bank[bfm.in.rs1]) < $signed(register_bank[bfm.in.rs2])) ? 32'hFFFFFFFF : 32'h00000000;
-                ADDI: predicted_result = register_bank[bfm.in.rs1] + {{20{bfm.in.imm[11]}},bfm.in.imm};
+            rd  = bfm.instr[11:7];
+            rs1 = bfm.instr[19:15];
+            rs2 = bfm.instr[24:20];
+            imm = bfm.instr[31:20];
+            opcode = bfm.instr[6:0];
+            funct3 = bfm.instr[14:12];
+            funct7 = bfm.instr[31:25];
+
+            case (opcode)
+                7'b0110011: // r-type 
+                begin
+                    case (funct3)
+                        3'b000: 
+                        begin
+                            if (funct7[5] == 0) operation = ADD;
+                            else operation = SUB;
+                        end
+                        3'b010: operation = SLT;
+                        3'b110: operation = OR;
+                        3'b111: operation = AND;
+                    endcase
+                end
+                7'b0010011: // i-type
+                begin
+                    operation = ADDI;
+                end
             endcase
 
-            register_bank[bfm.in.rd] = (bfm.in.rd == 0) ? 32'h00000000 : predicted_result;
+            case(operation)
+                ADD:  predicted_result = register_bank[rs1] + register_bank[rs2];
+                SUB:  predicted_result = register_bank[rs1] - register_bank[rs2];
+                AND:  predicted_result = register_bank[rs1] & register_bank[rs2];
+                OR:   predicted_result = register_bank[rs1] | register_bank[rs2];
+                SLT:  predicted_result = ($signed(register_bank[rs1]) < $signed(register_bank[rs2])) ? 32'hFFFFFFFF : 32'h00000000;
+                ADDI: predicted_result = register_bank[rs1] + {{20{imm[11]}},imm};
+            endcase
 
-            if (predicted_result !== bfm.result) $error("FAILED: rd: %0d  rs1: %0d  rs2: %0d  imm: %0d  op: %s  result: 0x%0h  expected: 0x%0h", bfm.in.rd, bfm.in.rs1, bfm.in.rs2, bfm.in.imm, bfm.in.operation.name(), bfm.result, predicted_result);
-            //else $display("PASSED: rd: %0d  rs1: %0d  rs2: %0d  imm: %0d  op: %s  result: 0x%0h  expected: 0x%0h", bfm.in.rd, bfm.in.rs1, bfm.in.rs2, bfm.in.imm, bfm.in.operation.name(), bfm.result, predicted_result);
+            register_bank[rd] = (rd == 0) ? 32'h00000000 : predicted_result;
+
+            if (predicted_result !== bfm.result) $error("FAILED: rd: %0d  rs1: %0d  rs2: %0d  imm: %0d  op: %s  result: 0x%0h  expected: 0x%0h", rd, rs1, rs2, imm, operation.name(), bfm.result, predicted_result);
+            else $display("PASSED: rd: %0d  rs1: %0d  rs2: %0d  imm: %0d  op: %s  result: 0x%0h  expected: 0x%0h", rd, rs1, rs2, imm, operation.name(), bfm.result, predicted_result);
 
         end : self_checker
     

@@ -11,8 +11,6 @@ interface cpu_bfm;
     logic [31:0] instr;
     logic [31:0] result;
 
-    Instruction in;
-
     initial begin
         clk = 1;
         forever begin
@@ -29,14 +27,53 @@ interface cpu_bfm;
 
     endtask : reset_cpu
 
-    task send_instruction();
+    task send_instruction(input op_e operation, input data_s data);
 
-        in = new();
-        `SV_RAND_CHECK(in.randomize());
-        //in.print_instr();
+        case (operation)
+            ADDI:
+            begin
+                data.opcode = 7'b0010011;
+                data.funct3 = 3'b000;
+                data.funct7 = 7'b0000000;
+                instr = {data.imm,data.rs1,data.funct3,data.rd,data.opcode};
+            end
+            ADD:
+            begin
+                data.opcode = 7'b0110011;
+                data.funct3 = 3'b000;
+                data.funct7 = 7'b0000000;
+                instr  = {data.funct7,data.rs2,data.rs1,data.funct3,data.rd,data.opcode};
+            end
+            SUB:
+            begin
+                data.opcode = 7'b0110011;
+                data.funct3 = 3'b000;
+                data.funct7 = 7'b0100000;
+                instr = {data.funct7,data.rs2,data.rs1,data.funct3,data.rd,data.opcode};
+            end
+            AND:
+            begin
+                data.opcode = 7'b0110011;
+                data.funct3 = 3'b111;
+                data.funct7 = 7'b0000000;
+                instr = {data.funct7,data.rs2,data.rs1,data.funct3,data.rd,data.opcode};
+            end
+            OR:
+            begin
+                data.opcode = 7'b0110011;
+                data.funct3 = 3'b110;
+                data.funct7 = 7'b0000000;
+                instr = {data.funct7,data.rs2,data.rs1,data.funct3,data.rd,data.opcode};
+            end
+            SLT:
+            begin
+                data.opcode = 7'b0110011;
+                data.funct3 = 3'b010;
+                data.funct7 = 7'b0000000;
+                instr = {data.funct7,data.rs2,data.rs1,data.funct3,data.rd,data.opcode};
+            end
+        endcase
 
-        instr = in.instr;
-        
         @(posedge clk);
 
     endtask : send_instruction

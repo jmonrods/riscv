@@ -4,21 +4,16 @@ class coverage extends uvm_component;
 
     virtual cpu_bfm bfm;
 
-    covergroup CovInsOp;
-        coverpoint bfm.in.operation;
-    endgroup
-
-    covergroup cov_slt_results_true_false;
-        coverpoint bfm.result {
-            bins false = {32'h00000000};
-            bins true  = {32'hFFFFFFFF};
+    covergroup cov_instr_operation;
+        coverpoint bfm.instr[6:0] {
+            bins rtype = {7'b0110011};
+            bins itype = {7'b0010011};
         }
     endgroup
 
     function new (string name, uvm_component parent);
         super.new(name, parent);
-        CovInsOp = new();
-        cov_slt_results_true_false = new();
+        cov_instr_operation = new();
     endfunction : new
 
     function void build_phase(uvm_phase phase);
@@ -30,8 +25,7 @@ class coverage extends uvm_component;
 
         forever begin : sampling_block
             @(posedge bfm.clk) #1;
-            CovInsOp.sample();
-            if (bfm.in.operation == SLT) cov_slt_results_true_false.sample();
+            cov_instr_operation.sample();
         end : sampling_block
     
     endtask : run_phase
