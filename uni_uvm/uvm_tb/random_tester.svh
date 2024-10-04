@@ -15,9 +15,12 @@ class random_tester extends uvm_component;
 
     task run_phase(uvm_phase phase);
 
+        phase.raise_objection(this);
+
         bfm.reset_cpu();
         repeat (400000) bfm.send_instruction();
-        $finish();
+        
+        phase.drop_objection(this);
         
     endtask : run_phase
 

@@ -4,9 +4,9 @@ class random_test extends uvm_test;
     `uvm_component_utils(random_test);
 
     // instantiate the tester class
-        random_tester random_tester_h;
-        coverage      coverage_h;
-        scoreboard    scoreboard_h;
+    random_tester random_tester_h;
+    coverage      coverage_h;
+    scoreboard    scoreboard_h;
 
     // declare a virtual bfm, to be passed in the constructor
     virtual cpu_bfm bfm;
