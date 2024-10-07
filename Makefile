@@ -16,7 +16,7 @@ cpu_single: clean
 cpu_multi: clean
 	vlib work
 	vmap work work
-	vlog -sv ./cpu_multi/cpu_tb.sv ./cpu_multi/cpu.sv
+	vlog -sv ./cpu_multi/cpu_tb.sv ./cpu_multi/cpu.sv ./alu/alu.sv
 	vsim -c work.cpu_tb -do "run -all; quit -f;"
 
 # ./cpu_pipeline/: pipelined riscv cpu

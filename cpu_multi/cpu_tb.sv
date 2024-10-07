@@ -8,23 +8,30 @@
 
 module cpu_tb ();
 
-    reg clk;
-    reg rst;
-    wire [31:0] read_data;
+    logic        clk;
+    logic        rst;
+    logic [31:0] read_data;
+    logic [31:0] instruction;
+    logic [31:0] program_counter;
+    
 
     cpu cpu1 (
         .clk(clk),
         .rst(rst),
-        .Result(read_data)
+        .Result(read_data),
+        .Instr(instruction),
+        .PC(program_counter)
     );
 
     initial begin
 
-        rst <= 1;
-        #10 rst <= 0;
-        $display(read_data);
+        rst = 1;
+        #10 rst = 0;
 
-        repeat (100) #10 $display($signed(read_data));
+        repeat (100) begin
+            @(posedge clk);
+            $display("PC: %8h  Result: %8h  Instr: %8h", program_counter, read_data, instruction);
+        end
 
         #100 $finish();
 
