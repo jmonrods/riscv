@@ -70,6 +70,13 @@ cpu_06: clean
 	vsim -c +UVM_TESTNAME="random_test" top_optimized -coverage -do "set NoQuitOnFinish 1; onbreak {resume}; log /* -r; run -all; coverage save -onexit coverage.ucdb; quit;"
 	vcover report coverage.ucdb
 
+# ./multi/: directed test for cpu
+multi_00: clean
+	vlib work
+	vmap work work
+	vlog -sv ./multi/cpu_tb.sv ./multi/cpu.sv
+	vsim -c work.cpu_tb -do "run -all; quit -f;"
+
 # clean: removes output files
 clean:
 	rm ./vsim.wlf -f
