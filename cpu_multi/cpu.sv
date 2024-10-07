@@ -131,12 +131,15 @@ module cpu (
         .RD2    (regdata2)
     );
 
-    ALU alu1 (
-        .Ctrl   (ALUControl),
-        .SrcA   (SrcA),
-        .SrcB   (SrcB),
-        .Result (ALUResult),
-        .zero   (zero)
+    alu alu1 (
+        .ALUControl   (ALUControl),
+        .A            (SrcA),
+        .B            (SrcB),
+        .Result       (ALUResult),
+        .oVerflow     (),
+        .Carry        (),
+        .Negative     (),
+        .Zero         (zero)
     );
 
     reg32 reg_execute (
@@ -352,34 +355,6 @@ module Extend (
         endcase
 
     end
-
-endmodule
-
-
-// 32-bit ALU (Behavioral)
-// Each operation needs to be replaced with proper hardware
-module ALU (
-    input        [2:0]  Ctrl,
-    input        [31:0] SrcA,
-    input        [31:0] SrcB,
-    output logic [31:0] Result,
-    output logic        zero
-);
-
-    always_comb begin
-
-        case (Ctrl)
-            3'b000:  Result = SrcA + SrcB;              // add
-            3'b001:  Result = SrcA - SrcB;              // subtract
-            3'b010:  Result = SrcA && SrcB;             // and
-            3'b011:  Result = SrcA || SrcB;             // or
-            3'b101:  Result = (SrcA < SrcB) ? 1 : 0;    // slt (set if less than)
-            default: Result = 32'hDEADBEEF;             // error
-        endcase
-
-    end
-
-    assign zero = (Result == 0) ? 1 : 0;
 
 endmodule
 

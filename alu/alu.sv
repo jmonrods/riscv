@@ -2,7 +2,7 @@
 // EL-3310 Diseño de sistemas digitales
 // Autor:       Juan José Montero Rodríguez
 // Fecha:       11.09.2024
-// Descripción: RISC-V ALU
+// Descripción: RISC-V ALU from Harris & Harris
 
 `timescale 1ns/1ps
 

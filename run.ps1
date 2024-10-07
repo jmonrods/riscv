@@ -35,58 +35,37 @@ if ($Argument -eq "clean") {
     Remove-Item $REPO\vsim.wlf                 -ErrorAction SilentlyContinue
 	Remove-Item $REPO\vsim_stacktrace.vstf     -ErrorAction SilentlyContinue
     Remove-Item $REPO\coverage.ucdb            -ErrorAction SilentlyContinue
-} elseif ($Argument -eq "cpu_00") {
+} elseif ($Argument -eq "alu") {
     vlib work
 	vmap work work
-	vlog -sv ./uni/cpu_tb.sv ./uni/cpu.sv ./uni/alu.sv
-	vsim -c work.cpu_tb -do "run -all; quit -f;"
-} elseif ($Argument -eq "alu_00") {
-    vlib work
-	vmap work work
-	vlog -sv ./uni/alu_tb.sv ./uni/alu.sv
+	vlog -sv ./alu/alu_tb.sv ./alu/alu.sv
 	vsim -c work.alu_tb -do "run -all; quit -f;"
-} elseif ($Argument -eq "cpu_01") {
+} elseif ($Argument -eq "cpu_single") {
     vlib work
 	vmap work work
-	vlog -sv +cover ./uni/cpu_tb.sv ./uni/cpu.sv ./uni/alu.sv
-	vsim -c -coverage work.cpu_tb -do "coverage save -onexit coverage.ucdb; run -all; quit -f;"
-	vcover report coverage.ucdb
-} elseif ($Argument -eq "cpu_02") {
+	vlog -sv ./cpu_single/cpu_tb.sv ./cpu_single/cpu.sv ./alu/alu.sv
+	vsim -c work.cpu_tb -do "run -all; quit -f;"
+} elseif ($Argument -eq "cpu_multi") {
     vlib work
 	vmap work work
-	vlog -sv ./uni_rand/imem_tb.sv ./uni_rand/imem.sv
-	vsim -c work.imem_tb -do "run -all; quit -f;"
-} elseif ($Argument -eq "cpu_03") {
+	vlog -sv ./cpu_multi/cpu_tb.sv ./cpu_multi/cpu.sv ./alu/alu.sv
+	vsim -c work.cpu_tb -do "run -all; quit -f;"
+} elseif ($Argument -eq "cpu_pipeline") {
     vlib work
 	vmap work work
-	vlog +cover -sv ./uni_rand_cov/imem_tb.sv ./uni_rand_cov/imem.sv
-	vsim -c -coverage work.imem_tb -do "coverage save -onexit coverage.ucdb; run -all; quit -f;"
-	vcover report coverage.ucdb
-} elseif ($Argument -eq "cpu_04") {
-    vlib work
-	vmap work work
-	vlog +cover -sv ./uni_rand_fulltest/cpu_tb.sv ./uni_rand_fulltest/cpu.sv ./uni_rand_fulltest/imem.sv ./uni_rand_fulltest/alu.sv
-	vsim -c -coverage work.cpu_tb -do "coverage save -onexit coverage.ucdb; run -all; quit -f;"
-	vcover report coverage.ucdb
-} elseif ($Argument -eq "cpu_05") {
-    vlib work
-	vmap work work
-	vlog -sv -f ./uni_rand_oop/dut.f
-	vlog -sv -f ./uni_rand_oop/tb.f
-	vopt top -o top_optimized +cover=sbfec
-    vsim -c top_optimized -coverage -do "set NoQuitOnFinish 1; onbreak {resume}; log /* -r; run -all; coverage save -onexit coverage.ucdb; quit;"
-	vcover report coverage.ucdb
-} elseif ($Argument -eq "cpu_06") {
+	vlog -sv ./cpu_pipeline/cpu_tb.sv ./cpu_pipeline/cpu.sv ./alu/alu.sv
+	vsim -c work.cpu_tb -do "run -all; quit -f;"
+} elseif ($Argument -eq "cpu_single_uvm") {
 	# UVM testbench
     vlib work
 	vmap work work
 	vlog -sv `
-		./uni_uvm/cpu/alu.sv `
-		./uni_uvm/cpu/cpu.sv `
-		./uni_uvm/uvm_tb/cpu_pkg.sv `
-		./uni_uvm/uvm_tb/cpu_bfm.sv `
-		./uni_uvm/top.sv `
-		+incdir+./uni_uvm/uvm_tb
+		./alu/alu.sv `
+		./uvm/cpu/cpu.sv `
+		./uvm/uvm_tb/cpu_pkg.sv `
+		./uvm/uvm_tb/cpu_bfm.sv `
+		./uvm/top.sv `
+		+incdir+./uvm/uvm_tb
 	vopt top -o top_optimized +cover=sbfec+cpu
 	vsim -c +UVM_TESTNAME="add_test" top_optimized -coverage -do "set NoQuitOnFinish 1; onbreak {resume}; log /* -r; run -all; coverage save -onexit coverage.ucdb; quit;"
 	vcover report coverage.ucdb
