@@ -31,8 +31,8 @@ module alu_tb ();
     initial begin
 
         // Test values
-        A = 6;
-        B = 4;
+        A = 32'h01233567;
+        B = 32'h76543210;
         $display("%t ps: A = 32'h%h",$time,A);
         $display("%t ps: B = 32'h%h",$time,B);
 
