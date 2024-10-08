@@ -71,11 +71,6 @@ if ($Argument -eq "clean") {
 	vcover report coverage.ucdb
 	vsim -c +UVM_TESTNAME="random_test" top_optimized -coverage -do "set NoQuitOnFinish 1; onbreak {resume}; log /* -r; run -all; coverage save -onexit coverage.ucdb; quit;"
 	vcover report coverage.ucdb
-} elseif ($Argument -eq "multi_00") {
-    vlib work
-	vmap work work
-	vlog -sv ./multi/cpu_tb.sv ./multi/cpu.sv
-	vsim -c work.cpu_tb -do "run -all; quit -f;"
 } else {
     Write-Host "Target not specified OR the specified target was not found."
     Write-Host "Call the command from the top as: > .\run.ps1 cpu_02"
