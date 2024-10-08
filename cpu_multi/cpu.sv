@@ -706,6 +706,8 @@ module instr_decoder(
             35:      ImmSrc = 2'b01; // sw
             51:      ImmSrc = 2'b00; // R-type
             99:      ImmSrc = 2'b10; // beq
+            19:      ImmSrc = 2'b00; // I-type
+            111:     ImmSrc = 2'b11; // jal
             default: ImmSrc = 2'b00; // not used
         endcase
 
