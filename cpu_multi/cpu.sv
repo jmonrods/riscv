@@ -513,7 +513,6 @@ module main_fsm(
     end
 
     // output logic
-    // transition logic
     always_comb begin
 
         case (current_state)
@@ -714,4 +713,3 @@ module instr_decoder(
     end
 
 endmodule : instr_decoder
-
