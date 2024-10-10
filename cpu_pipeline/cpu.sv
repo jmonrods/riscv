@@ -1,4 +1,3 @@
-
 // riscv pipeline
 module cpu (
     input        clk,
@@ -51,8 +50,7 @@ module cpu (
         .RegWrite    (RegWriteD)
     );
 
-endmodule
-
+endmodule : cpu
 
 
 module datapath (
@@ -72,7 +70,7 @@ module datapath (
     output logic        zero
 );
 
-endmodule
+endmodule : datapath
 
 
 module control (
@@ -179,9 +177,7 @@ module control (
 
     assign PCSrc = (Branch && Zero) || Jump;
 
-
     // ALU Decoder
-
     always_comb begin
 
         casex ({ALUOp,funct3,op[5],funct7_bit5})
@@ -199,4 +195,151 @@ module control (
 
     end
 
-endmodule
+endmodule : control
+
+
+// Program Counter
+module pc ( 
+    input               clk,
+    input               rst,
+    input               en,
+    input        [31:0] PCNext,
+    output logic [31:0] PC
+);
+
+    always_ff @ (posedge clk) begin
+        if (rst) PC <= 32'h00400000; // text segment
+        else if (en) PC <= PCNext;
+        else PC <= PC;
+    end
+
+endmodule : pc
+
+
+// Register Bank
+module register_bank (
+    input clk,
+    input rst,
+    input WE3,
+    input [4:0] A1,
+    input [4:0] A2,
+    input [4:0] A3,
+    input [31:0] WD3,
+    output logic [31:0] RD1,
+    output logic [31:0] RD2
+);
+
+    // array of static memory
+    logic [31:0] mem[32];
+
+    // write logic
+    int i;
+    always_ff @(negedge clk) begin
+        if (rst) for (i = 0; i<32; i++) mem[i] <= 0;
+        else if (WE3) mem[A3] <= WD3;
+    end
+
+    // read logic (combinational)
+    assign RD1 = (A1 == 0) ? 32'b0 : mem[A1];
+    assign RD2 = (A2 == 0) ? 32'b0 : mem[A2];
+    
+endmodule : register_bank
+
+
+// Sign extension
+module Extend (
+    input        [1:0]  src,
+    input        [31:0] A,
+    output logic [31:0] Q
+);
+
+endmodule : Extend
+
+
+module reg_n #(parameter bits = 32) ( 
+    input                   clk,
+    input                   rst,
+    input                   en,
+    input        [bits-1:0] din,
+    output logic [bits-1:0] dout
+);
+
+    always_ff @ (posedge clk) begin
+        if      (rst) dout <= 0;
+        else if (en)  dout <= din;
+        else          dout <= dout;
+    end
+
+endmodule : reg_n
+
+
+module mux32 (
+    input               sel,
+    input        [31:0] A,
+    input        [31:0] B,
+    output logic [31:0] Q 
+);
+
+    assign Q = sel ? B : A;
+
+endmodule : mux32
+
+
+module mux32_4 (
+    input         [1:0] sel,
+    input        [31:0] A,
+    input        [31:0] B,
+    input        [31:0] C,
+    input        [31:0] D,
+    output logic [31:0] Q 
+);
+
+    always_comb begin
+        case (sel)
+            2'b00: Q = A;
+            2'b01: Q = B;
+            2'b10: Q = C;
+            2'b11: Q = D;
+        endcase
+    end
+
+endmodule : mux32_4
+
+
+module adder32 (
+    input        [31:0] A,
+    input        [31:0] B,
+    output logic [31:0] Q
+);
+
+    assign Q = A + B;
+
+endmodule : adder32
+
+
+module pipe_reg_D (
+    
+);
+
+endmodule : pipe_reg_D
+
+
+module pipe_reg_E (
+
+);
+
+endmodule : pipe_reg_E
+
+
+module pipe_reg_M (
+
+);
+
+
+endmodule : pipe_reg_M
+
+module pipe_reg_W (
+
+);
+
+endmodule : pipe_reg_W

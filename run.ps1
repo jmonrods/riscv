@@ -57,6 +57,7 @@ if ($Argument -eq "clean") {
 		./cpu_pipeline/top_tb.sv `
 		./cpu_pipeline/top.sv `
 		./cpu_pipeline/cpu.sv `
+		./alu/alu.sv `
 		./cpu_pipeline/imem.sv `
 		./cpu_pipeline/dmem.sv
 	vsim -c work.top_tb -do "run -all; quit -f;"
