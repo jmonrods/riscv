@@ -23,7 +23,13 @@ cpu_multi: clean
 cpu_pipeline: clean
 	vlib work
 	vmap work work
-	vlog -sv ./cpu_pipeline/cpu_tb.sv ./cpu_pipeline/cpu.sv
+	vlog -sv \
+		./cpu_pipeline/top_tb.sv \
+		./cpu_pipeline/top.sv \
+		./cpu_pipeline/cpu.sv \
+		./cpu_pipeline/dmem.sv \
+		./cpu_pipeline/imem.sv \
+		./alu/alu.sv
 	vsim -c work.cpu_tb -do "run -all; quit -f;"
 
 # ./uvm/: single-cycle uvm testbench
