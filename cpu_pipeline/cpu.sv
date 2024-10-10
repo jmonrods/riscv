@@ -1,17 +1,16 @@
 
 // riscv pipeline
 module cpu (
-    input clk,
-    input rst,
-    input Instr,
-    input ReadData,
-    output logic PC,
-    output logic ALUResult,
-    output logic WriteData,
+    input        clk,
+    input        rst,
+    input [31:0] Instr,
+    input [31:0] ReadData,
+    output logic [31:0] PC,
+    output logic [31:0] ALUResult,
+    output logic [31:0] WriteData,
     output logic MemWrite
 );
 
-    logic       RegSrcD;
     logic       PCSrcD;
     logic [1:0] ResultSrcD;
     logic [2:0] ALUControlD;
@@ -24,15 +23,14 @@ module cpu (
     datapath data1 (
         .clk         (clk),
         .rst         (rst),
-        .Instr       (Inst),
+        .Instr       (Instr),
         .ReadData    (ReadData),
-        .RegSrc      (RegSrc),
-        .PCSrc       (PCSrc),
-        .ResultSrc   (ResultSrc),
-        .ALUControl  (ALUControl),
-        .ALUSrc      (ALUSrc),
-        .ImmSrc      (ImmSrc),
-        .RegWrite    (RegWrite),
+        .PCSrc       (PCSrcD),
+        .ResultSrc   (ResultSrcD),
+        .ALUControl  (ALUControlD),
+        .ALUSrc      (ALUSrcD),
+        .ImmSrc      (ImmSrcD),
+        .RegWrite    (RegWriteD),
         .PC          (PC),
         .ALUResult   (ALUResult),
         .WriteData   (WriteData),
@@ -43,9 +41,8 @@ module cpu (
         .op          (Instr[6:0]),
         .funct3      (Instr[14:12]),
         .funct7_bit5 (Instr[30]),
-        .Zero        (zeroD),
+        .Zero        (zero),
         .PCSrc       (PCSrcD),
-        .RegSrc      (RegSrc),
         .ResultSrc   (ResultSrcD),
         .MemWrite    (MemWriteD),
         .ALUControl  (ALUControlD),
@@ -63,12 +60,11 @@ module datapath (
     input               rst,
     input        [31:0] Instr,
     input        [31:0] ReadData,
-    input               RegSrc,
     input               PCSrc,
-    input               ResultSrc,
-    input               ALUControl,
+    input        [1:0]  ResultSrc,
+    input        [2:0]  ALUControl,
     input               ALUSrc,
-    input               ImmSrc,
+    input        [1:0]  ImmSrc,
     input               RegWrite,
     output logic [31:0] PC,
     output logic [31:0] ALUResult,
@@ -85,7 +81,6 @@ module control (
     input              funct7_bit5,
     input              Zero,
     output logic       PCSrc,
-    output logic       RegSrc,
     output logic [1:0] ResultSrc,
     output logic       MemWrite,
     output logic [2:0] ALUControl,

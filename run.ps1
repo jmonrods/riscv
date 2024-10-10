@@ -53,8 +53,13 @@ if ($Argument -eq "clean") {
 } elseif ($Argument -eq "cpu_pipeline") {
     vlib work
 	vmap work work
-	vlog -sv ./cpu_pipeline/cpu_tb.sv ./cpu_pipeline/cpu.sv ./alu/alu.sv
-	vsim -c work.cpu_tb -do "run -all; quit -f;"
+	vlog -sv `
+		./cpu_pipeline/top_tb.sv `
+		./cpu_pipeline/top.sv `
+		./cpu_pipeline/cpu.sv `
+		./cpu_pipeline/imem.sv `
+		./cpu_pipeline/dmem.sv
+	vsim -c work.top_tb -do "run -all; quit -f;"
 } elseif ($Argument -eq "cpu_single_uvm") {
 	# UVM testbench
     vlib work
