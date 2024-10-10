@@ -9,7 +9,7 @@ alu: clean
 cpu_single: clean
 	vlib work
 	vmap work work
-	vlog -sv ./cpu_single/cpu_tb.sv ./uncpu_singlei/cpu.sv ./alu/alu.sv
+	vlog -sv ./cpu_single/cpu_tb.sv ./cpu_single/cpu.sv ./alu/alu.sv
 	vsim -c work.cpu_tb -do "run -all; quit -f;"
 
 # ./cpu_multi/: multi-cycle riscv cpu
