@@ -30,7 +30,7 @@ cpu_pipeline: clean
 		./cpu_pipeline/dmem.sv \
 		./cpu_pipeline/imem.sv \
 		./alu/alu.sv
-	vsim -c work.cpu_tb -do "run -all; quit -f;"
+	vsim -c work.top_tb -do "run -all; quit -f;"
 
 # ./uvm/: single-cycle uvm testbench
 cpu_single_uvm: clean
