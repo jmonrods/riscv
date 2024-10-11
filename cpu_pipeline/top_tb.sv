@@ -10,7 +10,7 @@ module top_tb();
         #10;
         rst = 0;
 
-        #10000 $finish();
+        #200 $finish();
     end
 
     initial begin

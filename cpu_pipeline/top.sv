@@ -36,4 +36,8 @@ module top (
         .RD  (Instr)
     );
 
+    always @(posedge clk) begin
+        $display("%4t ps: PC=%8h  Instr=%8h  ReadData=%8h",$time,PC,Instr,ReadData);
+    end
+
 endmodule
