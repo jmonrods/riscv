@@ -14,7 +14,6 @@ module cpu (
     logic [1:0] ResultSrc;
     logic [2:0] ALUControl;
     logic       ALUSrc;
-    logic       MemWrite;
     logic [1:0] ImmSrc;
     logic       RegWrite;
     logic       zero;
@@ -69,6 +68,44 @@ module datapath (
     output logic [31:0] WriteData,
     output logic        zero
 );
+
+    logic [31:0] PCF;
+    logic [31:0] InstrF;
+    logic [31:0] PCPlus4F;
+    logic [31:0] PCFprime;
+
+    logic [31:0] InstrD;
+    logic [31:0] PCD;
+    logic [31:0] PCPlus4D;
+    logic  [4:0] RdD;
+    logic [31:0] ImmExtD;
+    logic [31:0] RD1D;
+    logic [31:0] RD2D;
+
+    logic [31:0] RD1E;
+    logic [31:0] RD2E;
+    logic [31:0] SrcAE;
+    logic [31:0] SrcBE;
+    logic [31:0] PCE;
+    logic  [4:0] RdE;
+    logic [31:0] ImmExtE;
+    logic [31:0] PCPlus4E;
+    logic [31:0] ALUResultE;
+    logic [31:0] WriteDataE;
+    logic [31:0] PCTargetE;
+
+    logic [31:0] ALUResultM;
+    logic [31:0] WriteDataM;
+    logic [31:0] ReadDataM;
+    logic [31:0] PCTargetM;
+    logic  [4:0] RdM;
+    logic [31:0] PCPlus4M;
+
+    logic [31:0] ALUResultW;
+    logic [31:0] ReadDataW;
+    logic [31:0] PCPlus4W;
+    logic [31:0] ResultW;
+    logic  [4:0] RdW;
 
     mux32 mux_pc_src (
         .sel (PCSrc),
@@ -156,6 +193,8 @@ module datapath (
         .Q       (PCTargetE)
     );
 
+    assign SrcAE = RD1E;
+
     alu alu1 (
         .ALUControl (ALUControl),
         .A          (SrcAE),
@@ -199,12 +238,12 @@ module datapath (
         .PCPlus4W   (PCPlus4W)
     );
 
-    module mux32_4 (
+    mux32_4 mux_result (
         .sel  (ResultSrc),
         .A    (ALUResultW),
         .B    (ReadDataW),
         .C    (PCPlus4W),
-        .D    (0),
+        .D    (),
         .Q    (ResultW) 
     );
 
@@ -466,7 +505,7 @@ module pipe_reg_D (
     output logic [31:0] PCPlus4D
 );
 
-    reg_n reg_PC #(.bits(32)) (
+    reg_n #(.bits(32)) reg_PC (
         .clk  (clk),
         .rst  (rst),
         .en   (1'b1),
@@ -474,7 +513,7 @@ module pipe_reg_D (
         .dout (PCD)
     );
 
-    reg_n reg_Instr #(.bits(32)) (
+    reg_n #(.bits(32)) reg_Instr (
         .clk  (clk),
         .rst  (rst),
         .en   (1'b1),
@@ -482,7 +521,7 @@ module pipe_reg_D (
         .dout (InstrD)
     );
 
-    reg_n reg_PCPlus4 #(.bits(32)) (
+    reg_n #(.bits(32)) reg_PCPlus4 (
         .clk  (clk),
         .rst  (rst),
         .en   (1'b1),
@@ -499,18 +538,18 @@ module pipe_reg_E (
     input [31:0] RD1D,
     input [31:0] RD2D,
     input [31:0] PCD,
-    input [31:0] RdD,
+    input  [4:0] RdD,
     input [31:0] ImmExtD,
     input [31:0] PCPlus4D,
     output logic [31:0] RD1E,
     output logic [31:0] RD2E,
     output logic [31:0] PCE,
-    output logic [31:0] RdE,
+    output logic  [4:0] RdE,
     output logic [31:0] ImmExtE,
     output logic [31:0] PCPlus4E
 );
 
-    reg_n reg_RD1 #(.bits(32)) (
+    reg_n #(.bits(32)) reg_RD1 (
         .clk  (clk),
         .rst  (rst),
         .en   (1'b1),
@@ -518,7 +557,7 @@ module pipe_reg_E (
         .dout (RD1E)
     );
 
-    reg_n reg_RD2 #(.bits(32)) (
+    reg_n #(.bits(32)) reg_RD2 (
         .clk  (clk),
         .rst  (rst),
         .en   (1'b1),
@@ -526,7 +565,7 @@ module pipe_reg_E (
         .dout (RD2E)
     );
 
-    reg_n reg_PC #(.bits(32)) (
+    reg_n #(.bits(32)) reg_PC (
         .clk  (clk),
         .rst  (rst),
         .en   (1'b1),
@@ -534,7 +573,7 @@ module pipe_reg_E (
         .dout (PCE)
     );
 
-    reg_n reg_Rd #(.bits(32)) (
+    reg_n #(.bits(5)) reg_Rd (
         .clk  (clk),
         .rst  (rst),
         .en   (1'b1),
@@ -542,7 +581,7 @@ module pipe_reg_E (
         .dout (RdE)
     );
 
-    reg_n reg_ImmExt #(.bits(32)) (
+    reg_n #(.bits(32)) reg_ImmExt (
         .clk  (clk),
         .rst  (rst),
         .en   (1'b1),
@@ -550,7 +589,7 @@ module pipe_reg_E (
         .dout (ImmExtE)
     );
 
-    reg_n reg_PCPlus4 #(.bits(32)) (
+    reg_n #(.bits(32)) reg_PCPlus4 (
         .clk  (clk),
         .rst  (rst),
         .en   (1'b1),
@@ -566,15 +605,15 @@ module pipe_reg_M (
     input rst,
     input [31:0] ALUResultE,
     input [31:0] WriteDataE,
-    input [31:0] RdE,
+    input [4:0] RdE,
     input [31:0] PCTargetE,
     output logic [31:0] ALUResultM,
     output logic [31:0] WriteDataM,
-    output logic [31:0] RdM,
+    output logic  [4:0] RdM,
     output logic [31:0] PCTargetM
 );
 
-    reg_n reg_ALUResult #(.bits(32)) (
+    reg_n #(.bits(32)) reg_ALUResult (
         .clk  (clk),
         .rst  (rst),
         .en   (1'b1),
@@ -582,7 +621,7 @@ module pipe_reg_M (
         .dout (ALUResultM)
     );
 
-    reg_n reg_WriteData #(.bits(32)) (
+    reg_n #(.bits(32)) reg_WriteData (
         .clk  (clk),
         .rst  (rst),
         .en   (1'b1),
@@ -590,7 +629,7 @@ module pipe_reg_M (
         .dout (WriteDataM)
     );
 
-    reg_n reg_Rd #(.bits(32)) (
+    reg_n #(.bits(5)) reg_Rd (
         .clk  (clk),
         .rst  (rst),
         .en   (1'b1),
@@ -598,7 +637,7 @@ module pipe_reg_M (
         .dout (RdM)
     );
 
-    reg_n reg_PCTarget #(.bits(32)) (
+    reg_n #(.bits(32)) reg_PCTarget (
         .clk  (clk),
         .rst  (rst),
         .en   (1'b1),
@@ -613,15 +652,15 @@ module pipe_reg_W (
     input rst,
     input [31:0] ALUResultM,
     input [31:0] ReadDataM,
-    input [31:0] RdM,
+    input  [4:0] RdM,
     input [31:0] PCPlus4M,
     output logic [31:0] ALUResultW,
     output logic [31:0] ReadDataW,
-    output logic [31:0] RdW,
+    output logic  [4:0] RdW,
     output logic [31:0] PCPlus4W
 );
 
-    reg_n reg_ALUResult #(.bits(32)) (
+    reg_n #(.bits(32)) reg_ALUResult (
         .clk  (clk),
         .rst  (rst),
         .en   (1'b1),
@@ -629,7 +668,7 @@ module pipe_reg_W (
         .dout (ALUResultW)
     );
 
-    reg_n reg_ReadData #(.bits(32)) (
+    reg_n #(.bits(32)) reg_ReadData (
         .clk  (clk),
         .rst  (rst),
         .en   (1'b1),
@@ -637,7 +676,7 @@ module pipe_reg_W (
         .dout (ReadDataW)
     );
 
-    reg_n reg_Rd #(.bits(32)) (
+    reg_n #(.bits(5)) reg_Rd (
         .clk  (clk),
         .rst  (rst),
         .en   (1'b1),
@@ -645,7 +684,7 @@ module pipe_reg_W (
         .dout (RdW)
     );
 
-    reg_n reg_PCPlus4 #(.bits(32)) (
+    reg_n #(.bits(32)) reg_PCPlus4 (
         .clk  (clk),
         .rst  (rst),
         .en   (1'b1),
