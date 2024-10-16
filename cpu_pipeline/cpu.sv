@@ -1,4 +1,11 @@
-// riscv pipeline
+// Instituto Tecnológico de Costa Rica
+// EL-3310 Diseño de sistemas digitales
+// Autor:       Juan José Montero Rodríguez
+// Fecha:       16.10.2024
+// Descripción: RISC-V Pipelined CPU from Harris & Harris
+
+`timescale 1ns/1ps
+
 module cpu (
     input        clk,
     input        rst,
@@ -97,7 +104,6 @@ module datapath (
     logic [31:0] ALUResultM;
     logic [31:0] WriteDataM;
     logic [31:0] ReadDataM;
-    logic [31:0] PCTargetM;
     logic  [4:0] RdM;
     logic [31:0] PCPlus4M;
 
@@ -214,11 +220,9 @@ module datapath (
         .ALUResultE  (ALUResultE),
         .WriteDataE  (WriteDataE),
         .RdE         (RdE),
-        .PCTargetE   (PCTargetE),
         .ALUResultM  (ALUResultM),
         .WriteDataM  (WriteDataM),
-        .RdM         (RdM),
-        .PCTargetM   (PCTargetM)
+        .RdM         (RdM)
     );
 
     assign ALUResult = ALUResultM;
@@ -606,11 +610,9 @@ module pipe_reg_M (
     input [31:0] ALUResultE,
     input [31:0] WriteDataE,
     input [4:0] RdE,
-    input [31:0] PCTargetE,
     output logic [31:0] ALUResultM,
     output logic [31:0] WriteDataM,
-    output logic  [4:0] RdM,
-    output logic [31:0] PCTargetM
+    output logic  [4:0] RdM
 );
 
     reg_n #(.bits(32)) reg_ALUResult (
@@ -635,14 +637,6 @@ module pipe_reg_M (
         .en   (1'b1),
         .din  (RdE),
         .dout (RdM)
-    );
-
-    reg_n #(.bits(32)) reg_PCTarget (
-        .clk  (clk),
-        .rst  (rst),
-        .en   (1'b1),
-        .din  (PCTargetE),
-        .dout (PCTargetM)
     );
 
 endmodule : pipe_reg_M

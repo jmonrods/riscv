@@ -1,5 +1,11 @@
-// Instruction Memory
-// ROM (aligned by 4)
+// Instituto Tecnológico de Costa Rica
+// EL-3310 Diseño de sistemas digitales
+// Autor:       Juan José Montero Rodríguez
+// Fecha:       16.10.2024
+// Descripción: RISC-V Instruction Memory
+
+`timescale 1ns/1ps
+
 module imem (
     input        [31:0] A,
     output logic [31:0] RD
