@@ -43,10 +43,12 @@ module cpu (
     );
 
     control ctrl1 (
+        .clk         (clk),
+        .rst         (rst),
         .op          (Instr[6:0]),
         .funct3      (Instr[14:12]),
         .funct7_bit5 (Instr[30]),
-        .Zero        (zero),
+        .ZeroE       (zero),
         .PCSrc       (PCSrc),
         .ResultSrc   (ResultSrc),
         .MemWrite    (MemWrite),
@@ -209,7 +211,7 @@ module datapath (
         .oVerflow   (),
         .Carry      (),
         .Negative   (),
-        .Zero       (Zero)
+        .Zero       (zero)
     );
 
     assign WriteDataE = RD2E;
@@ -255,10 +257,12 @@ endmodule : datapath
 
 
 module control (
+    input              clk,
+    input              rst,
     input        [6:0] op,
     input        [2:0] funct3,
     input              funct7_bit5,
-    input              Zero,
+    input              ZeroE,
     output logic       PCSrc,
     output logic [1:0] ResultSrc,
     output logic       MemWrite,
@@ -268,113 +272,186 @@ module control (
     output logic       RegWrite
 );
 
+    logic       JumpD;
+    logic       BranchD;
+    logic [1:0] ResultSrcD;
+    logic       MemWriteD;
+    logic [2:0] ALUControlD;
+    logic       ALUSrcD;
+    logic [1:0] ImmSrcD;
+    logic       RegWriteD;
+
+    logic       JumpE;
+    logic       BranchE;
+    logic [1:0] ResultSrcE;
+    logic       MemWriteE;
+    logic [2:0] ALUControlE;
+    logic       ALUSrcE;
+    logic       RegWriteE;
+
+    logic [1:0] ResultSrcM;
+    logic       MemWriteM;
+    logic       RegWriteM;
+
+    logic [1:0] ResultSrcW;
+    logic       RegWriteW;
+
+    assign ImmSrc = ImmSrcD;
+
     // Main Decoder
     logic [1:0] ALUOp;
-    logic       Branch;
-    logic       Jump;
 
     always_comb begin
 
         case (op[6:0])
             3: // lw
             begin
-                ALUOp     = 2'b00;
-                Branch    = 1'b0;
-                ResultSrc = 2'b01;
-                MemWrite  = 1'b0;
-                ALUSrc    = 1'b1;
-                ImmSrc    = 2'b00;
-                RegWrite  = 1'b1;
-                Jump      = 1'b0;
+                ALUOp      = 2'b00;
+                BranchD    = 1'b0;
+                ResultSrcD = 2'b01;
+                MemWriteD  = 1'b0;
+                ALUSrcD    = 1'b1;
+                ImmSrcD    = 2'b00;
+                RegWriteD  = 1'b1;
+                JumpD      = 1'b0;
             end
             35: // sw
             begin
-                ALUOp     = 2'b00;
-                Branch    = 1'b0;
-                ResultSrc = 2'b00;
-                MemWrite  = 1'b1;
-                ALUSrc    = 1'b1;
-                ImmSrc    = 2'b01;
-                RegWrite  = 1'b0;
-                Jump      = 1'b0;
+                ALUOp      = 2'b00;
+                BranchD    = 1'b0;
+                ResultSrcD = 2'b00;
+                MemWriteD  = 1'b1;
+                ALUSrcD    = 1'b1;
+                ImmSrcD    = 2'b01;
+                RegWriteD  = 1'b0;
+                JumpD      = 1'b0;
             end
             51: // R-type
             begin
-                ALUOp     = 2'b10;
-                Branch    = 1'b0;
-                ResultSrc = 2'b00;
-                MemWrite  = 1'b0;
-                ALUSrc    = 1'b0;
-                ImmSrc    = 2'b00;
-                RegWrite  = 1'b1;
-                Jump      = 1'b0;
+                ALUOp      = 2'b10;
+                BranchD    = 1'b0;
+                ResultSrcD = 2'b00;
+                MemWriteD  = 1'b0;
+                ALUSrcD    = 1'b0;
+                ImmSrcD    = 2'b00;
+                RegWriteD  = 1'b1;
+                JumpD      = 1'b0;
             end
             99: // beq
             begin
-                ALUOp     = 2'b01;
-                Branch    = 1'b1;
-                ResultSrc = 2'b00;
-                MemWrite  = 1'b0;
-                ALUSrc    = 1'b0;
-                ImmSrc    = 2'b10;
-                RegWrite  = 1'b0;
-                Jump      = 1'b0;
+                ALUOp      = 2'b01;
+                BranchD    = 1'b1;
+                ResultSrcD = 2'b00;
+                MemWriteD  = 1'b0;
+                ALUSrcD    = 1'b0;
+                ImmSrcD    = 2'b10;
+                RegWriteD  = 1'b0;
+                JumpD      = 1'b0;
             end
             19: // I-type
             begin
-                ALUOp     = 2'b10;
-                Branch    = 1'b0;
-                ResultSrc = 2'b00;
-                MemWrite  = 1'b0;
-                ALUSrc    = 1'b1;
-                ImmSrc    = 2'b00;
-                RegWrite  = 1'b1;
-                Jump      = 1'b0;
+                ALUOp      = 2'b10;
+                BranchD    = 1'b0;
+                ResultSrcD = 2'b00;
+                MemWriteD  = 1'b0;
+                ALUSrcD    = 1'b1;
+                ImmSrcD    = 2'b00;
+                RegWriteD  = 1'b1;
+                JumpD      = 1'b0;
             end
             111: // jal
             begin
-                ALUOp     = 2'b00;
-                Branch    = 1'b0;
-                ResultSrc = 2'b10;
-                MemWrite  = 1'b0;
-                ALUSrc    = 1'b0;
-                ImmSrc    = 2'b11;
-                RegWrite  = 1'b1;
-                Jump      = 1'b1;
+                ALUOp      = 2'b00;
+                BranchD    = 1'b0;
+                ResultSrcD = 2'b10;
+                MemWriteD  = 1'b0;
+                ALUSrcD    = 1'b0;
+                ImmSrcD    = 2'b11;
+                RegWriteD  = 1'b1;
+                JumpD      = 1'b1;
             end
             default: // not implemented
             begin
-                ALUOp     = 2'b00;
-                Branch    = 1'b0;
-                ResultSrc = 1'b0;
-                MemWrite  = 1'b0;
-                ALUSrc    = 1'b0;
-                ImmSrc    = 2'b00;
-                RegWrite  = 1'b0;
+                ALUOp      = 2'b00;
+                BranchD    = 1'b0;
+                ResultSrcD = 1'b0;
+                MemWriteD  = 1'b0;
+                ALUSrcD    = 1'b0;
+                ImmSrcD    = 2'b00;
+                RegWriteD  = 1'b0;
+                JumpD      = 1'b0;
             end
         endcase
 
     end
 
-    assign PCSrc = (Branch && Zero) || Jump;
+    assign PCSrcE = (BranchE && ZeroE) || JumpE;
+    assign PCSrc  = PCSrcE;
 
     // ALU Decoder
     always_comb begin
 
         casex ({ALUOp,funct3,op[5],funct7_bit5})
-            7'b00xxxxx: ALUControl = 3'b000; // lw, sw
-            7'b01xxxxx: ALUControl = 3'b001; // beq
-            7'b1000000: ALUControl = 3'b000; // add
-            7'b1000001: ALUControl = 3'b000; // add
-            7'b1000010: ALUControl = 3'b000; // add
-            7'b1000011: ALUControl = 3'b001; // sub
-            7'b10010xx: ALUControl = 3'b101; // slt
-            7'b10110xx: ALUControl = 3'b011; // or
-            7'b10111xx: ALUControl = 3'b010; // and
-            default:    ALUControl = 3'b000;
+            7'b00xxxxx: ALUControlD = 3'b000; // lw, sw
+            7'b01xxxxx: ALUControlD = 3'b001; // beq
+            7'b1000000: ALUControlD = 3'b000; // add
+            7'b1000001: ALUControlD = 3'b000; // add
+            7'b1000010: ALUControlD = 3'b000; // add
+            7'b1000011: ALUControlD = 3'b001; // sub
+            7'b10010xx: ALUControlD = 3'b101; // slt
+            7'b10110xx: ALUControlD = 3'b011; // or
+            7'b10111xx: ALUControlD = 3'b010; // and
+            default:    ALUControlD = 3'b000;
         endcase
 
     end
+
+    control_reg_D crD1 (
+        .clk         (clk),
+        .rst         (rst),
+        .RegWriteD   (RegWriteD),
+        .ResultSrcD  (ResultSrcD),
+        .MemWriteD   (MemWriteD),
+        .JumpD       (JumpD),
+        .BranchD     (BranchD),
+        .ALUControlD (ALUControlD),
+        .ALUSrcD     (ALUSrcD),
+        .RegWriteE   (RegWriteE),
+        .ResultSrcE  (ResultSrcE),
+        .MemWriteE   (MemWriteE),
+        .JumpE       (JumpE),
+        .BranchE     (BranchE),
+        .ALUControlE (ALUControlE),
+        .ALUSrcE     (ALUSrcE)
+    );
+
+    assign ALUSrc = ALUSrcE;
+    assign ALUControl = ALUControlE;
+
+    control_reg_E crE1 (
+        .clk        (clk),
+        .rst        (rst),
+        .RegWriteE  (RegWriteE),
+        .ResultSrcE (ResultSrcE),
+        .MemWriteE  (MemWriteE),
+        .RegWriteM  (RegWriteM),
+        .ResultSrcM (ResultSrcM),
+        .MemWriteM  (MemWriteM)
+    );
+
+    assign MemWrite = MemWriteM;
+
+    control_reg_M crM1 (
+        .clk        (clk),
+        .rst        (rst),
+        .RegWriteM  (RegWriteM),
+        .ResultSrcM (ResultSrcM),
+        .RegWriteW  (RegWriteW),
+        .ResultSrcW (ResultSrcW)
+    );
+
+    assign RegWrite = RegWriteW;
+    assign ResultSrc = ResultSrcW;
 
 endmodule : control
 
@@ -687,3 +764,147 @@ module pipe_reg_W (
     );
 
 endmodule : pipe_reg_W
+
+
+module control_reg_D (
+    input clk,
+    input rst,
+    input RegWriteD,
+    input [1:0] ResultSrcD,
+    input MemWriteD,
+    input JumpD,
+    input BranchD,
+    input [2:0] ALUControlD,
+    input ALUSrcD,
+    output logic RegWriteE,
+    output logic [1:0] ResultSrcE,
+    output logic MemWriteE,
+    output logic JumpE,
+    output logic BranchE,
+    output logic [2:0] ALUControlE,
+    output logic ALUSrcE
+);
+
+    reg_n #(.bits(1)) reg_RegWrite (
+        .clk  (clk),
+        .rst  (rst),
+        .en   (1'b1),
+        .din  (RegWriteD),
+        .dout (RegWriteE)
+    );
+
+    reg_n #(.bits(2)) reg_ResultSrc (
+        .clk  (clk),
+        .rst  (rst),
+        .en   (1'b1),
+        .din  (ResultSrcD),
+        .dout (ResultSrcE)
+    );
+
+    reg_n #(.bits(1)) reg_MemWrite (
+        .clk  (clk),
+        .rst  (rst),
+        .en   (1'b1),
+        .din  (MemWriteD),
+        .dout (MemWriteE)
+    );
+
+    reg_n #(.bits(1)) reg_Jump (
+        .clk  (clk),
+        .rst  (rst),
+        .en   (1'b1),
+        .din  (JumpD),
+        .dout (JumpE)
+    );
+
+    reg_n #(.bits(1)) reg_Branch (
+        .clk  (clk),
+        .rst  (rst),
+        .en   (1'b1),
+        .din  (BranchD),
+        .dout (BranchE)
+    );
+
+    reg_n #(.bits(3)) reg_ALUControl (
+        .clk  (clk),
+        .rst  (rst),
+        .en   (1'b1),
+        .din  (ALUControlD),
+        .dout (ALUControlE)
+    );
+
+    reg_n #(.bits(1)) reg_ALUSrc (
+        .clk  (clk),
+        .rst  (rst),
+        .en   (1'b1),
+        .din  (ALUSrcD),
+        .dout (ALUSrcE)
+    );
+
+endmodule : control_reg_D
+
+
+module control_reg_E (
+    input clk,
+    input rst,
+    input RegWriteE,
+    input [1:0] ResultSrcE,
+    input MemWriteE,
+    output logic RegWriteM,
+    output logic [1:0] ResultSrcM,
+    output logic MemWriteM
+);
+
+    reg_n #(.bits(1)) reg_RegWrite (
+        .clk  (clk),
+        .rst  (rst),
+        .en   (1'b1),
+        .din  (RegWriteE),
+        .dout (RegWriteM)
+    );
+
+    reg_n #(.bits(2)) reg_ResultSrc (
+        .clk  (clk),
+        .rst  (rst),
+        .en   (1'b1),
+        .din  (ResultSrcE),
+        .dout (ResultSrcM)
+    );
+
+    reg_n #(.bits(1)) reg_MemWrite (
+        .clk  (clk),
+        .rst  (rst),
+        .en   (1'b1),
+        .din  (MemWriteE),
+        .dout (MemWriteM)
+    );
+
+endmodule : control_reg_E
+
+
+module control_reg_M (
+    input clk,
+    input rst,
+    input RegWriteM,
+    input [1:0] ResultSrcM,
+    output logic RegWriteW,
+    output logic [1:0] ResultSrcW
+);
+
+    reg_n #(.bits(1)) reg_RegWrite (
+        .clk  (clk),
+        .rst  (rst),
+        .en   (1'b1),
+        .din  (RegWriteM),
+        .dout (RegWriteW)
+    );
+
+    reg_n #(.bits(2)) reg_ResultSrc (
+        .clk  (clk),
+        .rst  (rst),
+        .en   (1'b1),
+        .din  (ResultSrcM),
+        .dout (ResultSrcW)
+    );
+
+endmodule : control_reg_M
