@@ -190,10 +190,10 @@ module imem (
             32'h00400030: RD = 32'h409409B3; // sub x19, x8, x9
             32'h00400034: RD = 32'h00940933; // add x18, x8, x9
             32'h00400038: RD = 32'h409409B3; // sub x19, x8, x9
-            32'h0040003C: RD = 32'h00940933; // add x18, x8, x9
-            32'h00400040: RD = 32'h409409B3; // sub x19, x8, x9
-            32'h00400044: RD = 32'h00940933; // add x18, x8, x9
-            32'h00400048: RD = 32'h409409B3; // sub x19, x8, x9
+            32'h0040003C: RD = 32'h00700313; // addi x6 x0 7
+            32'h00400040: RD = 32'h00612023; // sw x6 0 x2
+            32'h00400044: RD = 32'h00012883; // lw x17 0 x2
+            32'h00400048: RD = 32'h00088893; // addi x17 x17 0
             32'h0040004C: RD = 32'h00940933; // add x18, x8, x9
             32'h00400050: RD = 32'h409409B3; // sub x19, x8, x9
             32'h00400054: RD = 32'h00940933; // add x18, x8, x9
@@ -244,6 +244,7 @@ module register_bank (
     always_ff @(posedge clk) begin
         if (rst) for (i = 0; i<32; i++) mem[i] <= 0;
 	else if (WE3) mem[A3] <= WD3;
+    mem[2] = 32'h7ffffff0;
     end
 
     // read logic
@@ -268,16 +269,20 @@ module dmem (
     // associative array: dynamic memory
     logic [31:0] mem [logic [31:0]];
 
+    // reset logic
+    always_ff @(posedge rst) begin
+        mem.delete();
+    end
+
     // write logic
     always_ff @(posedge clk) begin
-        if (rst) mem.delete();
-	else if (WE) mem[A] = WD;
+        if (!rst & WE) mem[A] = WD;
     end
 
     // read logic
-    always_ff @(posedge clk) begin
+    always_comb begin
         if (RE & !rst) RD = mem[A];
-        else           RD = 32'hDEADBEEF;
+        else RD = 32'hDEADBEEF;
     end
 
 endmodule
@@ -297,7 +302,7 @@ module Extend (
             2'b01:   Q = {{20{A[31]}}, A[31:25], A[11:7]};                   // S-Type
             2'b10:   Q = {{19{A[31]}}, A[31], A[7],A[30:25], A[11:8], 1'b0}; // B-Type
             2'b11:   Q = {{12{A[31]}}, A[19:12], A[20], A[30:21], 1'b0};     // J-Type
-            default: Q = 32'hDEADBEEF; // error
+            //default: Q = 32'hDEADBEEF; // error
         endcase
 
     end

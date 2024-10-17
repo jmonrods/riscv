@@ -22,21 +22,21 @@ module cpu_tb();
 
         rst <= 1;
         #10 rst <= 0;
-        $display($signed(read_data));
-        #10 $display($signed(read_data));
-        #10 $display($signed(read_data));
-        #10 $display($signed(read_data));
-        #10 $display($signed(read_data));
-        #10 $display($signed(read_data));
-        #10 $display($signed(read_data));
-        #10 $display($signed(read_data));
-        #10 $display($signed(read_data));
-        #10 $display($signed(read_data));
-        #10 $display($signed(read_data));
-        #10 $display($signed(read_data));
-        #10 $display($signed(read_data));
-        #10 $display($signed(read_data));
-        #10 $display($signed(read_data));
+            $display("%0h",read_data);
+        #10 $display("%0h",read_data);
+        #10 $display("%0h",read_data);
+        #10 $display("%0h",read_data);
+        #10 $display("%0h",read_data);
+        #10 $display("%0h",read_data);
+        #10 $display("%0h",read_data);
+        #10 $display("%0h",read_data);
+        #10 $display("%0h",read_data);
+        #10 $display("%0h",read_data);
+        #10 $display("%0h",read_data);
+        #10 $display("%0h",read_data);
+        #10 $display("%0h",read_data);
+        #10 $display("%0h",read_data);
+        #10 $display("%0h",read_data);
 
     end
 
