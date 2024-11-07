@@ -10,8 +10,11 @@ module top_tb();
 
     logic clk;
     logic rst;
+    logic [31:0] PC;
+    logic [31:0] Instr;
+    logic [31:0] Result;
 
-    top top1 (clk, rst);
+    top top1 (clk, rst, PC, Instr, Result);
 
     initial begin
         rst = 1;
@@ -24,6 +27,10 @@ module top_tb();
     initial begin
         clk = 0;
         forever #5 clk = !clk;
+    end
+
+    always @(posedge clk) begin
+        $display("%4t ps: PC=%8h  Instr=%8h  Result=%d",$time,PC,Instr,$signed(Result));
     end
 
 

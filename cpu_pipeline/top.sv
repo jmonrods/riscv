@@ -9,11 +9,11 @@
 module top (
     input clk,
     input rst,
+    output logic [31:0] PC,
+    output logic [31:0] Instr,
     output logic [31:0] Result
 );
 
-    logic [31:0] PC;
-    logic [31:0] Instr;
     logic [31:0] DataAdr;
     logic [31:0] WriteData;
     logic [31:0] ReadData;
@@ -45,9 +45,5 @@ module top (
         .A   (PC),
         .RD  (Instr)
     );
-
-    always @(posedge clk) begin
-        $display("%4t ps: PC=%8h  Instr=%8h  Result=%8h",$time,PC,Instr,Result);
-    end
 
 endmodule
