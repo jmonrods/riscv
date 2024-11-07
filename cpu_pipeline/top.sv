@@ -8,7 +8,8 @@
 
 module top (
     input clk,
-    input rst
+    input rst,
+    output logic [31:0] Result
 );
 
     logic [31:0] PC;
@@ -26,7 +27,8 @@ module top (
         .ALUResult   (DataAdr),
         .WriteData   (WriteData),
         .ReadData    (ReadData),
-        .MemWrite    (MemWrite)
+        .MemWrite    (MemWrite),
+        .Result      (Result)
     );
 
     dmem dmem1(
@@ -45,7 +47,7 @@ module top (
     );
 
     always @(posedge clk) begin
-        $display("%4t ps: PC=%8h  Instr=%8h  ReadData=%8h",$time,PC,Instr,ReadData);
+        $display("%4t ps: PC=%8h  Instr=%8h  Result=%8h",$time,PC,Instr,Result);
     end
 
 endmodule

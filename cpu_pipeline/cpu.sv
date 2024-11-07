@@ -14,7 +14,8 @@ module cpu (
     output logic [31:0] PC,
     output logic [31:0] ALUResult,
     output logic [31:0] WriteData,
-    output logic MemWrite
+    output logic MemWrite,
+    output logic [31:0] Result
 );
 
     logic       PCSrc;
@@ -39,7 +40,8 @@ module cpu (
         .PC          (PC),
         .ALUResult   (ALUResult),
         .WriteData   (WriteData),
-        .zero        (zero)
+        .zero        (zero),
+        .Result      (Result)
     );
 
     control ctrl1 (
@@ -75,7 +77,8 @@ module datapath (
     output logic [31:0] PC,
     output logic [31:0] ALUResult,
     output logic [31:0] WriteData,
-    output logic        zero
+    output logic        zero,
+    output logic [31:0] Result
 );
 
     logic [31:0] PCF;
@@ -114,6 +117,8 @@ module datapath (
     logic [31:0] PCPlus4W;
     logic [31:0] ResultW;
     logic  [4:0] RdW;
+
+    assign Result = ResultW;
 
     mux32 mux_pc_src (
         .sel (PCSrc),
@@ -222,9 +227,11 @@ module datapath (
         .ALUResultE  (ALUResultE),
         .WriteDataE  (WriteDataE),
         .RdE         (RdE),
+        .PCPlus4E    (PCPlus4E),
         .ALUResultM  (ALUResultM),
         .WriteDataM  (WriteDataM),
-        .RdM         (RdM)
+        .RdM         (RdM),
+        .PCPlus4M    (PCPlus4M)
     );
 
     assign ALUResult = ALUResultM;
@@ -687,9 +694,11 @@ module pipe_reg_M (
     input [31:0] ALUResultE,
     input [31:0] WriteDataE,
     input [4:0] RdE,
+    input [31:0] PCPlus4E,
     output logic [31:0] ALUResultM,
     output logic [31:0] WriteDataM,
-    output logic  [4:0] RdM
+    output logic  [4:0] RdM,
+    output [31:0] PCPlus4M
 );
 
     reg_n #(.bits(32)) reg_ALUResult (
@@ -714,6 +723,14 @@ module pipe_reg_M (
         .en   (1'b1),
         .din  (RdE),
         .dout (RdM)
+    );
+
+    reg_n #(.bits(32)) reg_PCPlus4 (
+        .clk  (clk),
+        .rst  (rst),
+        .en   (1'b1),
+        .din  (PCPlus4E),
+        .dout (PCPlus4M)
     );
 
 endmodule : pipe_reg_M

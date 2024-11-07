@@ -61,6 +61,17 @@ if ($Argument -eq "clean") {
 		./cpu_pipeline/imem.sv `
 		./cpu_pipeline/dmem.sv
 	vsim -c work.top_tb -do "run -all; quit -f;"
+} elseif ($Argument -eq "cpu_pipeline_dbg") {
+    vlib work
+	vmap work work
+	vlog -sv `
+		./cpu_pipeline/top_tb.sv `
+		./cpu_pipeline/top.sv `
+		./cpu_pipeline/cpu.sv `
+		./alu/alu.sv `
+		./cpu_pipeline/imem.sv `
+		./cpu_pipeline/dmem.sv
+	vsim -debugDB work.top_tb
 } elseif ($Argument -eq "cpu_single_uvm") {
 	# UVM testbench
     vlib work

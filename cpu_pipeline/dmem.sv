@@ -26,7 +26,7 @@ module dmem (
     end
 
     // read logic
-    always_ff @(posedge clk) begin
+    always_comb begin
         if (RE & !rst) RD = mem[A];
         else           RD = 32'hDEADBEEF;
     end
