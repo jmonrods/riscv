@@ -937,3 +937,29 @@ module control_reg_M (
     );
 
 endmodule : control_reg_M
+
+
+module hazard_unit (
+    input [4:0] Rs1E,
+    input [4:0] Rs2E,
+    input [4:0] RdM,
+    input [4:0] RdW,
+    input RegWriteM,
+    input RegWriteW,
+    output logic [1:0] ForwardAE,
+    output logic [1:0] ForwardBE
+);
+
+    always_comb begin
+        if ((Rs1E == RdM) & RegWriteM & (Rs1E != 0))      ForwardAE = 10;
+        else if ((Rs1E == RdW) & RegWriteW & (Rs1E != 0)) ForwardAE = 01;
+        else                                              ForwardAE = 00;
+    end
+
+    always_comb begin
+        if ((Rs2E == RdM) & RegWriteM & (Rs2E != 0))      ForwardBE = 10;
+        else if ((Rs2E == RdW) & RegWriteW & (Rs2E != 0)) ForwardBE = 01;
+        else                                              ForwardBE = 00;
+    end
+
+endmodule : hazard_unit
