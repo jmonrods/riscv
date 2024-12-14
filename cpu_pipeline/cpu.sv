@@ -23,7 +23,8 @@ module cpu (
     logic [2:0] ALUControl;
     logic       ALUSrc;
     logic [1:0] ImmSrc;
-    logic       RegWrite;
+    logic       RegWriteM;
+    logic       RegWriteW;
     logic       zero;
 
     datapath data1 (
@@ -36,7 +37,8 @@ module cpu (
         .ALUControl  (ALUControl),
         .ALUSrc      (ALUSrc),
         .ImmSrc      (ImmSrc),
-        .RegWrite    (RegWrite),
+        .RegWriteM   (RegWriteM),
+        .RegWriteW   (RegWriteW),
         .PC          (PC),
         .ALUResult   (ALUResult),
         .WriteData   (WriteData),
@@ -57,7 +59,8 @@ module cpu (
         .ALUControl  (ALUControl),
         .ALUSrc      (ALUSrc),
         .ImmSrc      (ImmSrc),
-        .RegWrite    (RegWrite)
+        .RegWriteM   (RegWriteM),
+        .RegWriteW   (RegWriteW)
     );
 
 endmodule : cpu
@@ -73,7 +76,8 @@ module datapath (
     input        [2:0]  ALUControl,
     input               ALUSrc,
     input        [1:0]  ImmSrc,
-    input               RegWrite,
+    input               RegWriteM,
+    input               RegWriteW,
     output logic [31:0] PC,
     output logic [31:0] ALUResult,
     output logic [31:0] WriteData,
@@ -99,6 +103,8 @@ module datapath (
     logic [31:0] SrcAE;
     logic [31:0] SrcBE;
     logic [31:0] PCE;
+    logic [31:0] Rs1E;
+    logic [31:0] Rs2E;
     logic  [4:0] RdE;
     logic [31:0] ImmExtE;
     logic [31:0] PCPlus4E;
@@ -117,6 +123,9 @@ module datapath (
     logic [31:0] PCPlus4W;
     logic [31:0] ResultW;
     logic  [4:0] RdW;
+
+    logic  [1:0] ForwardAE;
+    logic  [1:0] ForwardBE;
 
     assign Result = ResultW;
 
@@ -159,7 +168,7 @@ module datapath (
     register_bank rb1 (
         .clk (clk),
         .rst (rst),
-        .WE3 (RegWrite),
+        .WE3 (RegWriteW),
         .A1  (InstrD[19:15]),
         .A2  (InstrD[24:20]),
         .A3  (RdW),
@@ -182,12 +191,16 @@ module datapath (
         .RD1D     (RD1D),
         .RD2D     (RD2D),
         .PCD      (PCD),
+        .Rs1D     (InstrD[19:15]),
+        .Rs2D     (InstrD[24:20]),
         .RdD      (RdD),
         .ImmExtD  (ImmExtD),
         .PCPlus4D (PCPlus4D),
         .RD1E     (RD1E),
         .RD2E     (RD2E),
         .PCE      (PCE),
+        .Rs1E     (Rs1E),
+        .Rs2E     (Rs2E),
         .RdE      (RdE),
         .ImmExtE  (ImmExtE),
         .PCPlus4E (PCPlus4E)
@@ -206,8 +219,6 @@ module datapath (
         .Q       (PCTargetE)
     );
 
-    assign SrcAE = RD1E;
-
     alu alu1 (
         .ALUControl (ALUControl),
         .A          (SrcAE),
@@ -219,7 +230,34 @@ module datapath (
         .Zero       (zero)
     );
 
-    assign WriteDataE = RD2E;
+    mux32_4 mux_hazards_A (
+        .sel  (ForwardAE),
+        .A    (RD1E),
+        .B    (ResultW),
+        .C    (ALUResultM),
+        .D    (),
+        .Q    (SrcAE)
+    );
+
+    mux32_4 mux_hazards_B (
+        .sel  (ForwardBE),
+        .A    (RD2E),
+        .B    (ResultW),
+        .C    (ALUResultM),
+        .D    (),
+        .Q    (WriteDataE)
+    );
+
+    hazard_unit hu1 (
+        .Rs1E      (Rs1E),
+        .Rs2E      (Rs2E),
+        .RdM       (RdM),
+        .RdW       (RdW),
+        .RegWriteM (RegWriteM),
+        .RegWriteW (RegWriteW),
+        .ForwardAE (ForwardAE),
+        .ForwardBE (ForwardBE)
+    );
 
     pipe_reg_M prM1 (
         .clk         (clk),
@@ -276,7 +314,8 @@ module control (
     output logic [2:0] ALUControl,
     output logic       ALUSrc,
     output logic [1:0] ImmSrc,
-    output logic       RegWrite
+    output logic       RegWriteM,
+    output logic       RegWriteW
 );
 
     logic       JumpD;
@@ -298,10 +337,8 @@ module control (
 
     logic [1:0] ResultSrcM;
     logic       MemWriteM;
-    logic       RegWriteM;
 
     logic [1:0] ResultSrcW;
-    logic       RegWriteW;
 
     assign ImmSrc = ImmSrcD;
 
@@ -457,7 +494,6 @@ module control (
         .ResultSrcW (ResultSrcW)
     );
 
-    assign RegWrite = RegWriteW;
     assign ResultSrc = ResultSrcW;
 
 endmodule : control
