@@ -19,7 +19,8 @@ module cpu (
 );
 
     logic       PCSrc;
-    logic [1:0] ResultSrc;
+    logic [1:0] ResultSrcE;
+    logic [1:0] ResultSrcW;
     logic [2:0] ALUControl;
     logic       ALUSrc;
     logic [1:0] ImmSrc;
@@ -28,22 +29,23 @@ module cpu (
     logic       zero;
 
     datapath data1 (
-        .clk         (clk),
-        .rst         (rst),
-        .Instr       (Instr),
-        .ReadData    (ReadData),
-        .PCSrc       (PCSrc),
-        .ResultSrc   (ResultSrc),
-        .ALUControl  (ALUControl),
-        .ALUSrc      (ALUSrc),
-        .ImmSrc      (ImmSrc),
-        .RegWriteM   (RegWriteM),
-        .RegWriteW   (RegWriteW),
-        .PC          (PC),
-        .ALUResult   (ALUResult),
-        .WriteData   (WriteData),
-        .zero        (zero),
-        .Result      (Result)
+        .clk          (clk),
+        .rst          (rst),
+        .Instr        (Instr),
+        .ReadData     (ReadData),
+        .PCSrc        (PCSrc),
+        .ResultSrc    (ResultSrcW),
+        .ALUControl   (ALUControl),
+        .ALUSrc       (ALUSrc),
+        .ImmSrc       (ImmSrc),
+        .RegWriteM    (RegWriteM),
+        .RegWriteW    (RegWriteW),
+        .ResultSrcE_0 (ResultSrcE[0]),
+        .PC           (PC),
+        .ALUResult    (ALUResult),
+        .WriteData    (WriteData),
+        .zero         (zero),
+        .Result       (Result)
     );
 
     control ctrl1 (
@@ -54,7 +56,8 @@ module cpu (
         .funct7_bit5 (Instr[30]),
         .ZeroE       (zero),
         .PCSrc       (PCSrc),
-        .ResultSrc   (ResultSrc),
+        .ResultSrcE  (ResultSrcE),
+        .ResultSrcW  (ResultSrcW),
         .MemWrite    (MemWrite),
         .ALUControl  (ALUControl),
         .ALUSrc      (ALUSrc),
@@ -78,6 +81,7 @@ module datapath (
     input        [1:0]  ImmSrc,
     input               RegWriteM,
     input               RegWriteW,
+    input               ResultSrcE_0,
     output logic [31:0] PC,
     output logic [31:0] ALUResult,
     output logic [31:0] WriteData,
@@ -127,6 +131,10 @@ module datapath (
     logic  [1:0] ForwardAE;
     logic  [1:0] ForwardBE;
 
+    logic        StallF;
+    logic        StallD;
+    logic        FlushE;
+
     assign Result = ResultW;
 
     mux32 mux_pc_src (
@@ -139,7 +147,7 @@ module datapath (
     pc pc1 (
         .clk    (clk),
         .rst    (rst),
-        .en     (1'b1),
+        .en     (~StallF),
         .PCNext (PCFprime),
         .PC     (PCF)
     );
@@ -157,6 +165,7 @@ module datapath (
     pipe_reg_D prD1 (
         .clk      (clk),
         .rst      (rst),
+        .en       (~StallD),
         .PCF      (PCF),
         .InstrF   (InstrF),
         .PCPlus4F (PCPlus4F),
@@ -187,7 +196,7 @@ module datapath (
 
     pipe_reg_E prE1 (
         .clk      (clk),
-        .rst      (rst),
+        .rst      (rst | FlushE),
         .RD1D     (RD1D),
         .RD2D     (RD2D),
         .PCD      (PCD),
@@ -249,14 +258,18 @@ module datapath (
     );
 
     hazard_unit hu1 (
-        .Rs1E      (Rs1E),
-        .Rs2E      (Rs2E),
-        .RdM       (RdM),
-        .RdW       (RdW),
-        .RegWriteM (RegWriteM),
-        .RegWriteW (RegWriteW),
-        .ForwardAE (ForwardAE),
-        .ForwardBE (ForwardBE)
+        .Rs1E         (Rs1E),
+        .Rs2E         (Rs2E),
+        .RdM          (RdM),
+        .RdW          (RdW),
+        .RegWriteM    (RegWriteM),
+        .RegWriteW    (RegWriteW),
+        .ForwardAE    (ForwardAE),
+        .ForwardBE    (ForwardBE),
+        .StallF       (StallF),
+        .StallD       (StallD),
+        .FlushE       (FlushE),
+        .ResultSrcE_0 (ResultSrcE_0)
     );
 
     pipe_reg_M prM1 (
@@ -309,7 +322,8 @@ module control (
     input              funct7_bit5,
     input              ZeroE,
     output logic       PCSrc,
-    output logic [1:0] ResultSrc,
+    output logic [1:0] ResultSrcE,
+    output logic [1:0] ResultSrcW,
     output logic       MemWrite,
     output logic [2:0] ALUControl,
     output logic       ALUSrc,
@@ -329,7 +343,6 @@ module control (
 
     logic       JumpE;
     logic       BranchE;
-    logic [1:0] ResultSrcE;
     logic       MemWriteE;
     logic [2:0] ALUControlE;
     logic       ALUSrcE;
@@ -337,8 +350,6 @@ module control (
 
     logic [1:0] ResultSrcM;
     logic       MemWriteM;
-
-    logic [1:0] ResultSrcW;
 
     assign ImmSrc = ImmSrcD;
 
@@ -494,8 +505,6 @@ module control (
         .ResultSrcW (ResultSrcW)
     );
 
-    assign ResultSrc = ResultSrcW;
-
 endmodule : control
 
 
@@ -633,6 +642,7 @@ endmodule : adder32
 module pipe_reg_D (
     input clk,
     input rst,
+    input en,
     input [31:0] PCF,
     input [31:0] InstrF,
     input [31:0] PCPlus4F,
@@ -644,7 +654,7 @@ module pipe_reg_D (
     reg_n #(.bits(32)) reg_PC (
         .clk  (clk),
         .rst  (rst),
-        .en   (1'b1),
+        .en   (en),
         .din  (PCF),
         .dout (PCD)
     );
@@ -652,7 +662,7 @@ module pipe_reg_D (
     reg_n #(.bits(32)) reg_Instr (
         .clk  (clk),
         .rst  (rst),
-        .en   (1'b1),
+        .en   (en),
         .din  (InstrF),
         .dout (InstrD)
     );
@@ -660,7 +670,7 @@ module pipe_reg_D (
     reg_n #(.bits(32)) reg_PCPlus4 (
         .clk  (clk),
         .rst  (rst),
-        .en   (1'b1),
+        .en   (en),
         .din  (PCPlus4F),
         .dout (PCPlus4D)
     );
@@ -996,16 +1006,26 @@ endmodule : control_reg_M
 
 
 module hazard_unit (
-    input [4:0] Rs1E,
-    input [4:0] Rs2E,
-    input [4:0] RdM,
-    input [4:0] RdW,
-    input RegWriteM,
-    input RegWriteW,
+    // forwarding
+    input        [4:0] Rs1E,
+    input        [4:0] Rs2E,
+    input        [4:0] RdM,
+    input        [4:0] RdW,
+    input              RegWriteM,
+    input              RegWriteW,
     output logic [1:0] ForwardAE,
-    output logic [1:0] ForwardBE
+    output logic [1:0] ForwardBE,
+    // stalling
+    input        [4:0] Rs1D,
+    input        [4:0] Rs2D,
+    input        [4:0] RdE,
+    input              ResultSrcE_0,
+    output logic       StallF,
+    output logic       StallD,
+    output logic       FlushE
 );
 
+    // forwarding
     always_comb begin
         if ((Rs1E == RdM) & RegWriteM & (Rs1E != 0))      ForwardAE = 2'b10;
         else if ((Rs1E == RdW) & RegWriteW & (Rs1E != 0)) ForwardAE = 2'b01;
@@ -1017,5 +1037,12 @@ module hazard_unit (
         else if ((Rs2E == RdW) & RegWriteW & (Rs2E != 0)) ForwardBE = 2'b01;
         else                                              ForwardBE = 2'b00;
     end
+
+    // stalling
+    logic  lwStall;
+    assign lwStall = ResultSrcE_0 & ((Rs1D == RdE) | (Rs2D == RdE));
+    assign StallF = lwStall;
+    assign StallD = lwStall;
+    assign FlushE = lwStall;
 
 endmodule : hazard_unit
