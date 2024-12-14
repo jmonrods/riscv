@@ -674,12 +674,16 @@ module pipe_reg_E (
     input [31:0] RD1D,
     input [31:0] RD2D,
     input [31:0] PCD,
+    input [31:0] Rs1D,
+    input [31:0] Rs2D,
     input  [4:0] RdD,
     input [31:0] ImmExtD,
     input [31:0] PCPlus4D,
     output logic [31:0] RD1E,
     output logic [31:0] RD2E,
     output logic [31:0] PCE,
+    output logic [31:0] Rs1E,
+    output logic [31:0] Rs2E,
     output logic  [4:0] RdE,
     output logic [31:0] ImmExtE,
     output logic [31:0] PCPlus4E
@@ -707,6 +711,22 @@ module pipe_reg_E (
         .en   (1'b1),
         .din  (PCD),
         .dout (PCE)
+    );
+
+    reg_n #(.bits(32)) reg_Rs1 (
+        .clk  (clk),
+        .rst  (rst),
+        .en   (1'b1),
+        .din  (Rs1D),
+        .dout (Rs1E)
+    );
+
+    reg_n #(.bits(32)) reg_Rs2 (
+        .clk  (clk),
+        .rst  (rst),
+        .en   (1'b1),
+        .din  (Rs2D),
+        .dout (Rs2E)
     );
 
     reg_n #(.bits(5)) reg_Rd (
