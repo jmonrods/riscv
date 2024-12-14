@@ -27,7 +27,7 @@ module dmem (
 
     // read logic
     always_comb begin
-        if (RE & !rst) RD = mem[A];
+        if (RE & !rst) RD = mem.exists(A) ? mem[A] : 32'hDEADBEEF;
         else           RD = 32'hDEADBEEF;
     end
 
