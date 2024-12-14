@@ -30,7 +30,7 @@ module top_tb();
     end
 
     always @(posedge clk) begin
-        $display("%4t ps: PC=%8h  Instr=%8h  Result=%d",$time,PC,Instr,$signed(Result));
+        $display("%6t ps: PC=%8h  Instr=%8h  Result=%d",$time,PC,Instr,$signed(Result));
     end
 
 
