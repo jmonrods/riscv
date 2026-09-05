@@ -45,12 +45,8 @@ cpu_single_uvm: clean
 
 # clean: removes output files
 clean:
-	rm $(PROJECT_ROOT)/vsim.wlf -f
-	rm $(PROJECT_ROOT)/vsim.dbg -f
-	rm $(PROJECT_ROOT)/modelsim.ini -f
-	rm $(PROJECT_ROOT)/coverage.ucdb -f
-	rm $(PROJECT_ROOT)/coverage.txt -f
-	rm $(PROJECT_ROOT)/work/ -rf
-	rm $(PROJECT_ROOT)/transcript -f
+	rm ./csrc/ -rf
+	rm ./simv.daidir/ -rf
+
 
 
