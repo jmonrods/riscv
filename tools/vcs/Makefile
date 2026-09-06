@@ -47,6 +47,7 @@ cpu_single_uvm: clean
 clean:
 	rm ./csrc/ -rf
 	rm ./simv.daidir/ -rf
+	rm ucli.key -f
 
 
 
