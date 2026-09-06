@@ -7,3 +7,5 @@ questa:
 xcelium:
 	make -C tools/xcelium cpu_single_uvm
 
+lint:
+	make -C tools/spyglass lint
